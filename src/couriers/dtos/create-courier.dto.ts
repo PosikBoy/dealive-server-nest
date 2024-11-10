@@ -37,4 +37,8 @@ export class CreateCourierDto {
   @IsNotEmpty()
   @IsNumber()
   readonly documentNumber: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  readonly documentLink: string;
 }

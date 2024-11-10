@@ -7,20 +7,32 @@ import {
   DataType,
   ForeignKey,
   HasMany,
+  Index,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { OrderStatus } from './order-statuses.model';
 
 export interface OrderCreationAttrs {
   userId?: number;
-  phone?: string;
+  phoneNumber?: string;
   phoneName?: string;
   parcelType: string;
   weight: string;
   price: number;
 }
-@Table({ tableName: 'orders' })
+@Table({
+  tableName: 'orders',
+  indexes: [
+    {
+      fields: ['user_id'],
+    },
+    {
+      fields: ['courier_id'],
+    },
+  ],
+})
 export class Order extends Model<Order, OrderCreationAttrs> {
   @Column({
     type: DataType.INTEGER,
@@ -79,6 +91,7 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   })
   weight: string;
 
+  @ForeignKey(() => OrderStatus)
   @Column({
     type: DataType.STRING(10),
     allowNull: true,

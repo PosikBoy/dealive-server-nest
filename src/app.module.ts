@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { databaseProviders } from './database.providers';
 import { ConfigModule } from '@nestjs/config';
 import { CouriersModule } from './couriers/couriers.module';
-import { UsersController } from './users/users.controller';
 import { OrdersModule } from './orders/orders.module';
 import { AddressesModule } from './addresses/addresses.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { FilesModule } from './files/files.module';
+import { TokensModule } from './tokens/tokens.module';
 
 @Module({
-  controllers: [],
   providers: [...databaseProviders],
   exports: [...databaseProviders],
   imports: [
@@ -17,6 +19,10 @@ import { AddressesModule } from './addresses/addresses.module';
     CouriersModule,
     OrdersModule,
     AddressesModule,
+    UsersModule,
+    AuthModule,
+    FilesModule,
+    TokensModule,
   ],
 })
 export class AppModule {}

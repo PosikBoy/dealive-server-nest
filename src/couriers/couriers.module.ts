@@ -4,8 +4,8 @@ import { CouriersService } from './couriers.service';
 import { couriersProviders } from './couriers.providers';
 
 @Module({
-  imports: [],
   controllers: [CouriersController],
   providers: [CouriersService, ...couriersProviders],
+  exports: [CouriersService],
 })
 export class CouriersModule {}

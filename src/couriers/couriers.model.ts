@@ -16,6 +16,7 @@ interface CourierCreationAttrs {
   birthDate: Date;
   hashPass: string;
   documentNumber: string;
+  documentLink: string;
 }
 
 @Table({ tableName: 'couriers' })
@@ -44,7 +45,7 @@ export class Courier extends Model<Courier, CourierCreationAttrs> {
   phoneNumber: string;
 
   @Column({
-    type: DataType.STRING(30),
+    type: DataType.STRING(50),
     allowNull: false,
     unique: true,
     field: 'document_link',
@@ -81,7 +82,6 @@ export class Courier extends Model<Courier, CourierCreationAttrs> {
   @Column({
     type: DataType.STRING(10),
     allowNull: false,
-    unique: true,
     field: 'document_number',
   })
   documentNumber: string;

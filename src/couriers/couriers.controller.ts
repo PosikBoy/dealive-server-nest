@@ -8,7 +8,7 @@ export class CouriersController {
 
   @Get('/:id')
   getCourierById(@Param('id') id: number) {
-    return this.couriersService.getCourierById(id);
+    return this.couriersService.findCourierById(id);
   }
 
   @Post()

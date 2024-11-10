@@ -11,7 +11,12 @@ import {
 
 interface AddressCreationAttrs {
   address: string;
-  phone: string;
+  orderId: number;
+  phoneNumber: string;
+  floor?: string;
+  apartment?: string;
+  phoneName?: string;
+  info?: string;
 }
 
 @Table({ tableName: 'order_addresses' })
@@ -30,8 +35,9 @@ export class Address extends Model<Address, AddressCreationAttrs> {
     type: DataType.INTEGER,
     allowNull: false,
     unique: false,
+    field: 'order_id',
   })
-  order_id: number;
+  orderId: number;
 
   @Column({
     type: DataType.STRING(128),
