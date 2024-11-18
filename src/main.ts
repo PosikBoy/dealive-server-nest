@@ -8,7 +8,7 @@ async function start() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: 'http://localhost:3000', // Укажите разрешенный домен
+    origin: 'http://localhost:5173', // Укажите разрешенный домен
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, //access-control-allow-credentials:true
   });

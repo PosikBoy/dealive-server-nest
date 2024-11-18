@@ -8,7 +8,7 @@ import {
   IsNumber,
 } from 'class-validator';
 
-export class CreateCourierDto {
+export class CourierCreateDto {
   @IsNotEmpty()
   @IsString()
   readonly name: string;

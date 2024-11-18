@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CouriersModule } from './couriers/couriers.module';
 import { OrdersModule } from './orders/orders.module';
 import { AddressesModule } from './addresses/addresses.module';
-import { UsersModule } from './users/users.module';
+import { ClientsModule } from './clients/clients.module';
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
 import { TokensModule } from './tokens/tokens.module';
@@ -14,12 +14,13 @@ import { TokensModule } from './tokens/tokens.module';
   exports: [...databaseProviders],
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: `.${process.env.NODE_ENV}.env`,
     }),
     CouriersModule,
     OrdersModule,
     AddressesModule,
-    UsersModule,
+    ClientsModule,
     AuthModule,
     FilesModule,
     TokensModule,

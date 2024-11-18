@@ -1,4 +1,4 @@
-interface IUser {
+interface IClient {
   id: number;
   phoneNumber: string;
   name: string;
@@ -10,7 +10,7 @@ interface ITokens {
   accessToken: string;
 }
 
-interface IAuthUserResponse {
-  user: IUser;
+interface IAuthClientResponse {
+  client: IClient;
   tokens: ITokens;
 }

@@ -1,5 +1,9 @@
 import { Messages } from '@/constants/messages';
 import {
+  ACCESS_TOKEN_EXPIRES_IN,
+  REFRESH_TOKEN_EXPIRES_IN,
+} from '@/constants/auth';
+import {
   HttpException,
   HttpStatus,
   Injectable,
@@ -9,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 
 interface JwtPayload {
   id: number;
-  role: 'courier' | 'user';
+  role: 'courier' | 'client';
 }
 
 @Injectable()
@@ -19,15 +23,15 @@ export class TokensService {
   async generateTokens(payload: JwtPayload) {
     return {
       accessToken: this.jwtService.sign(payload, {
-        expiresIn: '1h',
+        expiresIn: ACCESS_TOKEN_EXPIRES_IN,
       }),
       refreshToken: this.jwtService.sign(payload, {
-        expiresIn: '1m',
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
       }),
     };
   }
 
-  validateToken(token: string): any {
+  validateToken(token: string): JwtPayload {
     try {
       const payload = this.jwtService.verify<JwtPayload>(token);
       return payload; // Вернет полезную нагрузку (payload)

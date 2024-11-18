@@ -2,19 +2,18 @@ import {
   Column,
   CreatedAt,
   DataType,
-  IsEmail,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 
-interface UserCreationAttrs {
+interface ClientCreationAttrs {
   email: string;
   hashPass: string;
 }
 
-@Table({ tableName: 'users' })
-export class User extends Model<User, UserCreationAttrs> {
+@Table({ tableName: 'clients' })
+export class Client extends Model<Client, ClientCreationAttrs> {
   @Column({
     primaryKey: true,
     autoIncrement: true,

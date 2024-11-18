@@ -1,4 +1,4 @@
-import { COURIERS_REPOSITORY } from '@/constants/constants';
+import { COURIERS_REPOSITORY } from '@/constants/sequelize';
 import { Courier } from './couriers.model';
 
 export const couriersProviders = [

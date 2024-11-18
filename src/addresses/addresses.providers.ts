@@ -1,4 +1,4 @@
-import { ADDRESS_REPOSITORY } from '@/constants/constants';
+import { ADDRESS_REPOSITORY } from '@/constants/sequelize';
 import { Address } from './addresses.model';
 
 export const addressesRepository = [

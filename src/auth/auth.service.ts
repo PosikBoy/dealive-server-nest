@@ -1,4 +1,4 @@
-import { UsersService } from '@/users/users.service';
+import { ClientsService } from '@/clients/clients.service';
 import {
   HttpException,
   HttpStatus,
@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
-  UserAuthDto,
+  ClientAuthDto,
   CourierRegisterDto,
   CourierLoginDto,
 } from './dtos/auth.dto';
@@ -15,24 +15,27 @@ import { TokensService } from '@/tokens/tokens.service';
 import { CouriersService } from '@/couriers/couriers.service';
 import { FilesService } from '@/files/files.service';
 import { Messages } from '@/constants/messages';
+import { PASSWORD_SALT } from '@/constants/auth';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    private clientService: ClientsService,
     private tokenService: TokensService,
     private courierService: CouriersService,
     private filesService: FilesService,
   ) {}
 
-  async userRegistration(authDto: UserAuthDto): Promise<IAuthUserResponse> {
+  async clientRegistration(
+    authDto: ClientAuthDto,
+  ): Promise<IAuthClientResponse> {
     const { email, password } = authDto;
 
     if (!email || !password) {
       throw new HttpException(Messages.FILL_ALL_FIELDS, HttpStatus.BAD_REQUEST);
     }
 
-    const candidate = await this.usersService.findByEmail(email);
+    const candidate = await this.clientService.findByEmail(email);
     if (candidate) {
       throw new HttpException(
         Messages.USER_ALREADY_EXISTS,
@@ -40,38 +43,37 @@ export class AuthService {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, PASSWORD_SALT);
 
-    const user = await this.usersService.create(email, hashedPassword);
+    const client = await this.clientService.create(email, hashedPassword);
 
     const tokens = await this.tokenService.generateTokens({
-      id: user.id,
-      role: 'user',
+      id: client.id,
+      role: 'client',
     });
 
-    const { createdAt, updatedAt, hashPass, ...userWithoutSensitiveInfo } =
-      user.toJSON();
-    console.log(userWithoutSensitiveInfo);
-    return { user: userWithoutSensitiveInfo, tokens: tokens };
+    const { createdAt, updatedAt, hashPass, ...clientWithoutSensitiveInfo } =
+      client.toJSON();
+    return { client: clientWithoutSensitiveInfo, tokens: tokens };
   }
 
-  async userLogin(authDto: UserAuthDto): Promise<IAuthUserResponse> {
+  async clientLogin(authDto: ClientAuthDto): Promise<IAuthClientResponse> {
     const { email, password } = authDto;
 
     if (!email || !password) {
       throw new HttpException(Messages.FILL_ALL_FIELDS, HttpStatus.BAD_REQUEST);
     }
 
-    const user = await this.usersService.findByEmail(email);
+    const client = await this.clientService.findByEmail(email);
 
-    if (!user) {
+    if (!client) {
       throw new HttpException(
         Messages.INVALID_CREDENTIALS,
         HttpStatus.UNAUTHORIZED,
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.hashPass);
+    const isPasswordValid = await bcrypt.compare(password, client.hashPass);
     if (!isPasswordValid) {
       throw new HttpException(
         Messages.INVALID_CREDENTIALS,
@@ -79,18 +81,15 @@ export class AuthService {
       );
     }
     //Чистим лишние данные
-    const { createdAt, updatedAt, hashPass, ...userWithoutSensitiveInfo } =
-      user.toJSON();
-
-    console.log(userWithoutSensitiveInfo);
-    //id, name, email, phone_number
+    const { createdAt, updatedAt, hashPass, ...clientWithoutSensitiveInfo } =
+      client.toJSON();
 
     const tokens = await this.tokenService.generateTokens({
-      id: user.id,
-      role: 'user',
+      id: client.id,
+      role: 'client',
     });
 
-    return { user: userWithoutSensitiveInfo, tokens: tokens };
+    return { client: clientWithoutSensitiveInfo, tokens: tokens };
   }
 
   async courierRegistration(
@@ -111,7 +110,8 @@ export class AuthService {
       );
     }
 
-    const hashPass = await bcrypt.hash(password, 5);
+    console.log(password, PASSWORD_SALT);
+    const hashPass = await bcrypt.hash(password, PASSWORD_SALT);
     const documentLink = await this.filesService.saveImages(documentImages);
 
     const courier = await this.courierService.createCourier({

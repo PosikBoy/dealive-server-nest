@@ -1,13 +1,12 @@
 import { Address } from '@/addresses/addresses.model';
 import { Courier } from '@/couriers/couriers.model';
-import { User } from '@/users/users.model';
+import { Client } from '@/clients/clients.model';
 import {
   Column,
   CreatedAt,
   DataType,
   ForeignKey,
   HasMany,
-  Index,
   Model,
   Table,
   UpdatedAt,
@@ -15,7 +14,7 @@ import {
 import { OrderStatus } from './order-statuses.model';
 
 export interface OrderCreationAttrs {
-  userId?: number;
+  clientId?: number;
   phoneNumber?: string;
   phoneName?: string;
   parcelType: string;
@@ -26,7 +25,7 @@ export interface OrderCreationAttrs {
   tableName: 'orders',
   indexes: [
     {
-      fields: ['user_id'],
+      fields: ['client_id'],
     },
     {
       fields: ['courier_id'],
@@ -42,14 +41,14 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   })
   id: number;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => Client)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     unique: false,
-    field: 'user_id',
+    field: 'client_id',
   })
-  userId?: number;
+  clientId?: number;
 
   @Column({
     type: DataType.DATE,

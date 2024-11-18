@@ -19,6 +19,10 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types" // Убедитесь, что ваш путь E2E включен
+    ]
   }
 }
