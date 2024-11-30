@@ -9,14 +9,14 @@ import {
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
-import { ClientJwtGuard, CourierJwtGuard } from '@/auth/auth.guards';
+import { JwtGuard } from '@/auth/auth.guards';
 import { Request } from 'express';
 
 @Controller('client')
 export class ClientOrdersController {
   constructor(private ordersService: OrdersService) {}
 
-  @UseGuards(ClientJwtGuard)
+  @UseGuards(JwtGuard)
   @Get('order/:id')
   async getOrderById(@Param('id') id: number, @Req() request: Request) {
     const user = request.user;
@@ -30,7 +30,7 @@ export class ClientOrdersController {
     return order;
   }
 
-  @UseGuards(ClientJwtGuard)
+  @UseGuards(JwtGuard)
   @Get('orders')
   async getAllOrders(@Req() request: Request) {
     const user = request.user;
@@ -44,7 +44,7 @@ export class CourierOrdersController {
   constructor(private ordersService: OrdersService) {}
 
   //Получить доступные для выполнения заказы
-  @UseGuards(CourierJwtGuard)
+  @UseGuards(JwtGuard)
   @Get('available')
   async getAvailableOrders() {
     const orders = await this.ordersService.getCourierAvailableOrders();
@@ -52,7 +52,7 @@ export class CourierOrdersController {
   }
 
   // Получить активные заказы
-  @UseGuards(CourierJwtGuard)
+  @UseGuards(JwtGuard)
   @Get('active')
   async getTakenOrders(@Req() request: Request) {
     const courier = request.user;
@@ -61,7 +61,7 @@ export class CourierOrdersController {
   }
 
   // Получить данные о заказе
-  @UseGuards(CourierJwtGuard)
+  @UseGuards(JwtGuard)
   @Get(':orderId')
   async getOrderById(
     @Param('orderId') orderId: number,
@@ -76,7 +76,7 @@ export class CourierOrdersController {
   }
 
   // Взять заказ
-  @UseGuards(CourierJwtGuard)
+  @UseGuards(JwtGuard)
   @Post(':orderId/take')
   async takeOrder(@Param('orderId') orderId: number, @Req() request: Request) {
     const user = request.user;

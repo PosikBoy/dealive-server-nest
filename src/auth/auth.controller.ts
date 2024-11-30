@@ -3,8 +3,10 @@ import {
   Controller,
   Get,
   Post,
+  Req,
   Res,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -14,11 +16,12 @@ import {
   CourierLoginDto,
 } from './dtos/auth.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { REFRESH_TOKEN, REFRESH_TOKEN_MAX_AGE } from '@/constants/auth';
 import { Messages } from '@/constants/messages';
+import { JwtGuard } from './auth.guards';
 
-@Controller('users')
+@Controller('client')
 export class ClientAuthController {
   constructor(private authService: AuthService) {}
   @Post('login')
@@ -41,6 +44,19 @@ export class ClientAuthController {
     });
 
     return res.send({ client, accessToken: tokens.accessToken });
+  }
+
+  @Get('refresh')
+  async refresh(@Req() request: Request, @Res() res: Response) {
+    const refreshToken = request.cookies[REFRESH_TOKEN];
+    const tokens = await this.authService.refreshTokens(refreshToken);
+
+    res.cookie(REFRESH_TOKEN, tokens.refreshToken, {
+      httpOnly: true,
+      maxAge: REFRESH_TOKEN_MAX_AGE,
+    });
+
+    return res.send({ accessToken: tokens.accessToken });
   }
 
   @Get('logout')
@@ -68,5 +84,11 @@ export class CourierAuthController {
       courierRegisterDto,
       documentFiles,
     );
+  }
+  @Get('refresh')
+  async refresh(@Req() request: Request, @Res() res: Response) {
+    const refreshToken = request.cookies[REFRESH_TOKEN];
+    const tokens = await this.authService.refreshTokens(refreshToken);
+    return res.send(tokens);
   }
 }
