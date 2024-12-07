@@ -12,6 +12,7 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { OrderStatus } from './order-statuses.model';
+import { orderStatuses } from './ordersStatuses/orders.statuses';
 
 export interface OrderCreationAttrs {
   clientId?: number;
@@ -44,7 +45,7 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   @ForeignKey(() => Client)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: true,
     unique: false,
     field: 'client_id',
   })
@@ -92,9 +93,10 @@ export class Order extends Model<Order, OrderCreationAttrs> {
 
   @ForeignKey(() => OrderStatus)
   @Column({
-    type: DataType.STRING(10),
+    type: DataType.INTEGER,
     allowNull: true,
     unique: false,
+    defaultValue: orderStatuses.searchCourier,
     field: 'status_id',
   })
   statusId: number;

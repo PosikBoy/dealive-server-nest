@@ -1,7 +1,7 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 //TODO: Убрать createdAt and updatedAt
-@Table({ tableName: 'order_statuses' })
+@Table({ tableName: 'order_statuses', timestamps: false })
 export class OrderStatus extends Model<OrderStatus> {
   @Column({
     type: DataType.INTEGER,

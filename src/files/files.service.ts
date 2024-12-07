@@ -1,7 +1,13 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as uuid from 'uuid';
+import { Messages } from '@/constants/messages';
 
 @Injectable()
 export class FilesService {
@@ -25,10 +31,8 @@ export class FilesService {
       });
       return directoryName;
     } catch (error) {
-      throw new HttpException(
-        'Произошла ошибка при сохранении файла',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.log(error);
+      throw new InternalServerErrorException(Messages.FILE_SAVE_ERROR);
     }
   }
 }

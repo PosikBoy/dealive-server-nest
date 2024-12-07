@@ -3,12 +3,7 @@ import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
 } from '@/constants/auth';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 interface JwtPayload {
@@ -34,9 +29,9 @@ export class TokensService {
   validateToken(token: string): JwtPayload {
     try {
       const payload = this.jwtService.verify<JwtPayload>(token);
-      return payload; // Вернет полезную нагрузку (payload)
+      return payload;
     } catch (error) {
-      throw new UnauthorizedException(Messages.INVALID_TOKEN); // Или можно вернуть null, если это подходит вашему коду
+      throw new UnauthorizedException(Messages.INVALID_TOKEN);
     }
   }
 }

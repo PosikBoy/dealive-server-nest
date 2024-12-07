@@ -80,7 +80,7 @@ export class Courier extends Model<Courier, CourierCreationAttrs> {
   birthDate: Date;
 
   @Column({
-    type: DataType.STRING(10),
+    type: DataType.STRING(11),
     allowNull: false,
     field: 'document_number',
   })

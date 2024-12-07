@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreatedAt,
@@ -14,6 +15,7 @@ interface ClientCreationAttrs {
 
 @Table({ tableName: 'clients' })
 export class Client extends Model<Client, ClientCreationAttrs> {
+  @ApiProperty({ example: 1, description: 'Уникальный идентификатор' })
   @Column({
     primaryKey: true,
     autoIncrement: true,
@@ -22,12 +24,21 @@ export class Client extends Model<Client, ClientCreationAttrs> {
   })
   id: number;
 
+  @ApiProperty({ example: 'Евгений', description: 'Имя пользователя' })
   @Column({ type: DataType.STRING(30), allowNull: true, unique: false })
   name: string;
 
+  @ApiProperty({
+    example: 'example@example.com',
+    description: 'Электронная почта',
+  })
   @Column({ type: DataType.STRING(45), allowNull: false, unique: true })
   email: string;
 
+  @ApiProperty({
+    example: '+7 (999) 999-99-99',
+    description: 'Номер телефона',
+  })
   @Column({
     type: DataType.STRING(20),
     allowNull: true,
@@ -44,13 +55,17 @@ export class Client extends Model<Client, ClientCreationAttrs> {
   })
   hashPass: string;
 
+  @ApiProperty({
+    example: 'yes/no',
+    description: 'Подтверждена ли почта пользователя',
+  })
   @Column({
-    type: DataType.STRING(3),
+    type: DataType.BOOLEAN,
     allowNull: true,
-    defaultValue: 'no',
+    defaultValue: false,
     field: 'is_confirmed',
   })
-  isConfirmed: string;
+  isConfirmed: boolean;
 
   @CreatedAt
   @Column({

@@ -1,4 +1,4 @@
-export interface ClientEditInfo {
+export interface ClientEditInfoDto {
   name: string;
   email: string;
   phoneNumber: string;

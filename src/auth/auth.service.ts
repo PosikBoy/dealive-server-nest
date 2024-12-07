@@ -1,7 +1,7 @@
 import { ClientsService } from '@/clients/clients.service';
 import {
-  HttpException,
-  HttpStatus,
+  BadRequestException,
+  ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +9,7 @@ import {
   ClientAuthDto,
   CourierRegisterDto,
   CourierLoginDto,
+  ExistCandidateDto,
 } from './dtos/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { TokensService } from '@/tokens/tokens.service';
@@ -16,6 +17,8 @@ import { CouriersService } from '@/couriers/couriers.service';
 import { FilesService } from '@/files/files.service';
 import { Messages } from '@/constants/messages';
 import { PASSWORD_SALT } from '@/constants/auth';
+import { ClientWithoutSensitiveInfo } from './dtos/client-without-sensitive-info';
+import { JwtUser } from '@/types/jwt';
 
 @Injectable()
 export class AuthService {
@@ -32,15 +35,12 @@ export class AuthService {
     const { email, password } = authDto;
 
     if (!email || !password) {
-      throw new HttpException(Messages.FILL_ALL_FIELDS, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(Messages.FILL_ALL_FIELDS);
     }
 
-    const candidate = await this.clientService.findByEmail(email);
+    const candidate = await this.clientService.findClient('email', email, true);
     if (candidate) {
-      throw new HttpException(
-        Messages.USER_ALREADY_EXISTS,
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new ConflictException(Messages.USER_ALREADY_EXISTS);
     }
 
     const hashedPassword = await bcrypt.hash(password, PASSWORD_SALT);
@@ -52,44 +52,37 @@ export class AuthService {
       role: 'client',
     });
 
-    const { createdAt, updatedAt, hashPass, ...clientWithoutSensitiveInfo } =
-      client.toJSON();
-    return { client: clientWithoutSensitiveInfo, tokens: tokens };
+    return { client, tokens: tokens };
   }
 
   async clientLogin(authDto: ClientAuthDto): Promise<IAuthClientResponse> {
     const { email, password } = authDto;
 
     if (!email || !password) {
-      throw new HttpException(Messages.FILL_ALL_FIELDS, HttpStatus.BAD_REQUEST);
+      throw new BadRequestException(Messages.FILL_ALL_FIELDS);
     }
 
-    const client = await this.clientService.findByEmail(email);
+    let client = await this.clientService.findClient('email', email, true);
 
     if (!client) {
-      throw new HttpException(
-        Messages.INVALID_CREDENTIALS,
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
     }
 
-    const isPasswordValid = await bcrypt.compare(password, client.hashPass);
-    if (!isPasswordValid) {
-      throw new HttpException(
-        Messages.INVALID_CREDENTIALS,
-        HttpStatus.UNAUTHORIZED,
-      );
+    let isPasswordValid = false;
+    if ('hashPass' in client) {
+      isPasswordValid = await bcrypt.compare(password, client.hashPass);
     }
-    //Чистим лишние данные
-    const { createdAt, updatedAt, hashPass, ...clientWithoutSensitiveInfo } =
-      client.toJSON();
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
+    }
 
     const tokens = await this.tokenService.generateTokens({
       id: client.id,
       role: 'client',
     });
+    client = await this.clientService.findClient('email', email);
 
-    return { client: clientWithoutSensitiveInfo, tokens: tokens };
+    return { client, tokens: tokens };
   }
 
   async courierRegistration(
@@ -98,19 +91,20 @@ export class AuthService {
   ): Promise<ITokens> {
     const { phoneNumber, password, email } = courierDto;
 
-    const candidate = await this.courierService.findCourierByEmailOrPhone(
+    const candidateByEmail = await this.courierService.findCourier(
+      'email',
       email,
+    );
+
+    const candidateByPhone = await this.courierService.findCourier(
+      'phoneNumber',
       phoneNumber,
     );
 
-    if (candidate) {
-      throw new HttpException(
-        Messages.USER_ALREADY_EXISTS,
-        HttpStatus.BAD_REQUEST,
-      );
+    if (candidateByEmail || candidateByPhone) {
+      throw new ConflictException(Messages.USER_ALREADY_EXISTS);
     }
 
-    console.log(password, PASSWORD_SALT);
     const hashPass = await bcrypt.hash(password, PASSWORD_SALT);
     const documentLink = await this.filesService.saveImages(documentImages);
 
@@ -130,12 +124,21 @@ export class AuthService {
   async courierLogin(loginCourierDto: CourierLoginDto): Promise<ITokens> {
     const { phoneNumber, password } = loginCourierDto;
 
-    const courier = await this.courierService.findCourierByPhone(phoneNumber);
+    const courier = await this.courierService.findCourier(
+      'phoneNumber',
+      phoneNumber,
+      true,
+    );
 
     if (!courier) {
       throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
     }
-    const isPasswordValid = await bcrypt.compare(password, courier.hashPass);
+    let isPasswordValid;
+    if ('hashPass' in courier) {
+      isPasswordValid = await bcrypt.compare(password, courier.hashPass);
+    } else {
+      throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
+    }
 
     if (!isPasswordValid) {
       throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
@@ -153,5 +156,28 @@ export class AuthService {
     const { id, role } = this.tokenService.validateToken(refreshToken);
     const tokens = this.tokenService.generateTokens({ id, role });
     return tokens;
+  }
+
+  async existCourierCandidate(existCourierDto: ExistCandidateDto) {
+    const phoneNumberCandidate = await this.courierService.findCourier(
+      'phoneNumber',
+      existCourierDto.phoneNumber,
+    );
+
+    const emailCandidate = await this.courierService.findCourier(
+      'email',
+      existCourierDto.email,
+    );
+
+    if (phoneNumberCandidate || emailCandidate) {
+      throw new ConflictException(Messages.USER_ALREADY_EXISTS);
+    }
+
+    return false;
+  }
+
+  async isCourierApproved(user: JwtUser) {
+    const courier = await this.courierService.findCourier('id', user.id, true);
+    return courier.isApproved;
   }
 }

@@ -8,6 +8,7 @@ import { ClientsModule } from './clients/clients.module';
 import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
 import { TokensModule } from './tokens/tokens.module';
+import { SuggestionModule } from './suggestions/suggestions.module';
 
 @Module({
   providers: [...databaseProviders],
@@ -24,6 +25,7 @@ import { TokensModule } from './tokens/tokens.module';
     AuthModule,
     FilesModule,
     TokensModule,
+    SuggestionModule,
   ],
 })
 export class AppModule {}
