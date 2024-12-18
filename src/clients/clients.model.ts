@@ -1,71 +1,53 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { User } from '@/users/user.model';
 import {
   Column,
   CreatedAt,
   DataType,
+  ForeignKey,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 
-interface ClientCreationAttrs {
-  email: string;
-  hashPass: string;
+interface CourierCreationAttrs {
+  userId: number;
+  name?: string;
 }
 
 @Table({ tableName: 'clients' })
-export class Client extends Model<Client, ClientCreationAttrs> {
-  @ApiProperty({ example: 1, description: 'Уникальный идентификатор' })
+export class Client extends Model<Client, CourierCreationAttrs> {
+  @ForeignKey(() => User)
   @Column({
+    type: DataType.INTEGER,
     primaryKey: true,
     autoIncrement: true,
-    type: DataType.INTEGER,
     unique: true,
+    field: 'user_id',
   })
-  id: number;
+  userId: number;
 
-  @ApiProperty({ example: 'Евгений', description: 'Имя пользователя' })
-  @Column({ type: DataType.STRING(30), allowNull: true, unique: false })
+  @Column({
+    type: DataType.STRING(30),
+    allowNull: false,
+    defaultValue: '',
+  })
   name: string;
 
-  @ApiProperty({
-    example: 'example@example.com',
-    description: 'Электронная почта',
-  })
-  @Column({ type: DataType.STRING(45), allowNull: false, unique: true })
-  email: string;
-
-  @ApiProperty({
-    example: '+7 (999) 999-99-99',
-    description: 'Номер телефона',
-  })
-  @Column({
-    type: DataType.STRING(20),
-    allowNull: true,
-    unique: true,
-    field: 'phone_number',
-  })
-  phoneNumber: string;
-
-  @Column({
-    type: DataType.STRING(100),
-    allowNull: false,
-    unique: false,
-    field: 'hash_pass',
-  })
-  hashPass: string;
-
-  @ApiProperty({
-    example: 'yes/no',
-    description: 'Подтверждена ли почта пользователя',
-  })
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: true,
+    allowNull: false,
     defaultValue: false,
-    field: 'is_confirmed',
+    field: 'is_number_confirmed',
   })
-  isConfirmed: boolean;
+  isNumberConfirmed: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'is_email_confirmed',
+  })
+  isEmailConfirmed: boolean;
 
   @CreatedAt
   @Column({

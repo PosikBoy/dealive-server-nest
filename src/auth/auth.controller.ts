@@ -170,6 +170,7 @@ export class CourierAuthController {
     @Body() courierRegisterDto: CourierRegisterDto,
     @UploadedFiles() documentFiles: Express.Multer.File[],
   ) {
+    console.log(courierRegisterDto);
     return await this.authService.courierRegistration(
       courierRegisterDto,
       documentFiles,

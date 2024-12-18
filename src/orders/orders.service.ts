@@ -12,8 +12,13 @@ import { JwtUser } from '@/types/jwt';
 import { Messages } from '@/constants/messages';
 import { Op } from 'sequelize';
 import { OrderWithoutSensitiveInfoDto } from './dtos/courier-order.dto';
-import { orderStatuses } from './ordersStatuses/orders.statuses';
 import { ClientsService } from '@/clients/clients.service';
+import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
+import { OrderAction } from '@/order-actions/order-actions.model';
+import { OrderActionService } from '@/order-actions/order-actions.service';
+import { Courier } from '@/couriers/couriers.model';
+import { UserService } from '@/users/user.service';
+import { UserRolesEnum } from '@/users/user.model';
 
 @Injectable()
 export class OrdersService {
@@ -21,16 +26,19 @@ export class OrdersService {
     @Inject(ORDERS_REPOSITORY) private ordersRepository: typeof Order,
     @Inject(ADDRESS_REPOSITORY) private addressRepository: typeof Address,
     private clientService: ClientsService,
+    private orderActionsService: OrderActionService,
+    private userService: UserService,
   ) {}
 
   async getAllOrders(user: JwtUser): Promise<Order[]> {
     const { id } = user;
     let orders: Order[];
+
     if (user.role === 'client') {
       orders = await this.ordersRepository.findAll({
         where: { clientId: id },
         include: {
-          all: true,
+          model: Address,
         },
       });
     } else if (user.role === 'courier') {
@@ -47,7 +55,7 @@ export class OrdersService {
         },
       });
     }
-    console.log(orders);
+
     if (!orders) {
       throw new NotFoundException(Messages.ORDERS_NOT_FOUND);
     }
@@ -60,7 +68,14 @@ export class OrdersService {
     user: JwtUser,
   ): Promise<Order | OrderWithoutSensitiveInfoDto> {
     const order = await this.ordersRepository.findByPk(id, {
-      include: { all: true },
+      include: [
+        {
+          model: Address,
+        },
+        {
+          model: OrderAction,
+        },
+      ],
     });
     if (!order) {
       throw new NotFoundException(Messages.ORDER_NOT_FOUND);
@@ -70,7 +85,7 @@ export class OrdersService {
     }
 
     if (user.role === 'courier' && order.courierId !== user.id) {
-      if (order.statusId != orderStatuses.searchCourier) {
+      if (order.statusId != OrderStatusEnum.SEARCH_COURIER) {
         throw new NotFoundException(Messages.ORDER_NOT_FOUND);
       }
 
@@ -80,14 +95,8 @@ export class OrdersService {
     if (
       user.role === 'courier' &&
       order.courierId === user.id &&
-      order.statusId != orderStatuses.courierInTransit
+      order.statusId != OrderStatusEnum.COURIER_IN_TRANSIT
     ) {
-      console.log(
-        user.role === 'courier' &&
-          order.courierId === user.id &&
-          order.statusId != orderStatuses.courierInTransit,
-      );
-
       return new OrderWithoutSensitiveInfoDto(order);
     }
     return order;
@@ -97,7 +106,7 @@ export class OrdersService {
   async getAvailableOrders() {
     const orders = await this.ordersRepository.findAll({
       where: {
-        statusId: orderStatuses.searchCourier,
+        statusId: OrderStatusEnum.SEARCH_COURIER,
       },
       attributes: {
         exclude: ['clientId', 'phoneNumber', 'phoneName', 'updatedAt'],
@@ -118,7 +127,10 @@ export class OrdersService {
 
     const order = this.ordersRepository.findAll({
       where: {
-        [Op.and]: [{ courierId }, { statusId: orderStatuses.courierInTransit }],
+        [Op.and]: [
+          { courierId },
+          { statusId: OrderStatusEnum.COURIER_IN_TRANSIT },
+        ],
       },
       include: {
         model: Address,
@@ -156,9 +168,15 @@ export class OrdersService {
 
     // Если пользователь авторизован, получаем данные клиента
     if (user) {
-      const client = await this.clientService.findClient('id', user.id);
-      clientId = client.id;
-      phoneNumber = client.phoneNumber;
+      const userDB = await this.userService.findUser(
+        'id',
+        user.id,
+        UserRolesEnum.CLIENT,
+      );
+      const client = await this.clientService.findClient(user.id);
+
+      clientId = client.userId;
+      if ('phoneNumber' in userDB) phoneNumber = userDB.phoneNumber || '';
       phoneName = client.name;
     }
 
@@ -171,8 +189,8 @@ export class OrdersService {
       phoneNumber,
       phoneName,
     });
-
     // Создание адресов, связанных с заказом
+
     const addressPromises = addresses.map((address) =>
       this.addressRepository.create({
         ...address,
@@ -181,19 +199,26 @@ export class OrdersService {
     );
     const createdAddresses = await Promise.all(addressPromises);
 
+    const orderFromDb = await this.ordersRepository.findByPk(order.id, {
+      include: {
+        model: Address,
+      },
+    });
+    const actions = await this.orderActionsService.generate(orderFromDb);
+
     // Возвращаем созданный заказ с адресами
-    return { ...order.dataValues, addresses: createdAddresses };
+    return { ...order.dataValues, addresses: createdAddresses, actions };
   }
 
   async takeOrder(orderId: number, courier: JwtUser) {
     const courierId = courier.id;
 
     const order = await this.ordersRepository.findByPk(orderId);
-    if (order.statusId != orderStatuses.searchCourier) {
+    if (order.statusId != OrderStatusEnum.SEARCH_COURIER) {
       throw new BadRequestException(Messages.ORDER_TAKE_ERROR);
     }
     order.courierId = courierId;
-    order.statusId = orderStatuses.courierInTransit;
+    order.statusId = OrderStatusEnum.COURIER_IN_TRANSIT;
 
     await order.save();
 
@@ -202,8 +227,8 @@ export class OrdersService {
 
   async cancelClientOrder(orderId: number, client: JwtUser) {
     const order = await this.ordersRepository.findByPk(orderId);
-    if (order.statusId == orderStatuses.searchCourier) {
-      order.statusId = orderStatuses.cancelled;
+    if (order.statusId == OrderStatusEnum.SEARCH_COURIER) {
+      order.statusId = OrderStatusEnum.CANCELLED;
       order.save();
     } else {
       throw new BadRequestException(Messages.ORDER_CANCEL_NOT_AVAILABLE);

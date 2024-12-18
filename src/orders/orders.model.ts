@@ -2,6 +2,7 @@ import { Address } from '@/addresses/addresses.model';
 import { Courier } from '@/couriers/couriers.model';
 import { Client } from '@/clients/clients.model';
 import {
+  BelongsTo,
   Column,
   CreatedAt,
   DataType,
@@ -12,7 +13,8 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { OrderStatus } from './order-statuses.model';
-import { orderStatuses } from './ordersStatuses/orders.statuses';
+import { OrderAction } from '@/order-actions/order-actions.model';
+import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
 
 export interface OrderCreationAttrs {
   clientId?: number;
@@ -31,6 +33,8 @@ export interface OrderCreationAttrs {
     {
       fields: ['courier_id'],
     },
+    { fields: ['status_id'] },
+    { fields: ['status_id', 'date'] },
   ],
 })
 export class Order extends Model<Order, OrderCreationAttrs> {
@@ -96,7 +100,7 @@ export class Order extends Model<Order, OrderCreationAttrs> {
     type: DataType.INTEGER,
     allowNull: true,
     unique: false,
-    defaultValue: orderStatuses.searchCourier,
+    defaultValue: OrderStatusEnum.SEARCH_COURIER,
     field: 'status_id',
   })
   statusId: number;
@@ -133,4 +137,13 @@ export class Order extends Model<Order, OrderCreationAttrs> {
 
   @HasMany(() => Address)
   addresses: Address[];
+
+  @HasMany(() => OrderAction)
+  actions: OrderAction[];
+
+  @BelongsTo(() => OrderStatus)
+  status: OrderStatus;
+
+  @BelongsTo(() => Courier)
+  courier: Courier;
 }

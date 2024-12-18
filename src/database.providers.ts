@@ -4,6 +4,12 @@ import { Client } from './clients/clients.model';
 import { Address } from './addresses/addresses.model';
 import { Order } from './orders/orders.model';
 import { OrderStatus } from './orders/order-statuses.model';
+import { OrderAction } from './order-actions/order-actions.model';
+import { User } from './users/user.model';
+import { Chats } from './chats/chat/chat.model';
+import { Messages } from './chats/messages/messages.model';
+import { ChatParticipants } from './chats/chatParticipants/chat-participants.model';
+import { Files } from './files/files.model';
 
 export const databaseProviders = [
   {
@@ -17,7 +23,19 @@ export const databaseProviders = [
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
       });
-      sequelize.addModels([Courier, Client, Address, Order, OrderStatus]);
+      sequelize.addModels([
+        Courier,
+        Client,
+        Address,
+        Order,
+        User,
+        Chats,
+        ChatParticipants,
+        Messages,
+        OrderStatus,
+        OrderAction,
+        Files,
+      ]);
       await sequelize.sync();
       return sequelize;
     },

@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsEmail,
-  IsPhoneNumber,
-  IsDate,
-  Length,
-  IsNotEmpty,
-  IsNumber,
-} from 'class-validator';
+import { IsString, IsDate, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CourierCreateDto {
   @IsNotEmpty()
@@ -20,19 +12,8 @@ export class CourierCreateDto {
   @IsString()
   readonly lastName: string;
 
-  @IsEmail()
-  readonly email: string;
-
-  @IsPhoneNumber('RU') // Можно указать страну, например, 'RU'
-  readonly phoneNumber: string;
-
   @IsDate()
   readonly birthDate: Date;
-
-  @IsNotEmpty()
-  @IsString()
-  @Length(8, 128) // Предположим, что длина пароля от 8 до 128 символов
-  readonly hashPass: string;
 
   @IsNotEmpty()
   @IsNumber()

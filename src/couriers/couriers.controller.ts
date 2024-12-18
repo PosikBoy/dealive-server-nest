@@ -5,13 +5,18 @@ import { Request } from 'express';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from '@/auth/decorators/roles-auth.decorator';
 import { ApiResponses } from '@/constants/swaggerResponses';
+import { UserService } from '@/users/user.service';
+import { UserRolesEnum } from '@/users/user.model';
 
 @ApiTags('Работа с курьерами')
 @Roles('courier')
 @UseGuards(RolesGuard)
 @Controller('courier')
 export class CouriersController {
-  constructor(private couriersService: CouriersService) {}
+  constructor(
+    private couriersService: CouriersService,
+    private userService: UserService,
+  ) {}
 
   @ApiResponse({
     status: 200,
@@ -31,6 +36,13 @@ export class CouriersController {
   @Get('')
   async getCourier(@Req() request: Request) {
     const id = request.user.id;
-    return await this.couriersService.findCourier('id', id);
+    const user = await this.userService.findUser(
+      'id',
+      id,
+      UserRolesEnum.COURIER,
+      false,
+    );
+    const courier = await this.couriersService.findCourier(user.id);
+    return { ...courier, ...user };
   }
 }

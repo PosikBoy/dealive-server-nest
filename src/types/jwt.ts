@@ -1,4 +1,4 @@
 export interface JwtUser {
   id: number;
-  role: 'courier' | 'client';
+  role: 'courier' | 'client' | 'support';
 }

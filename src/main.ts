@@ -2,10 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import path from 'path';
 
 async function start() {
   const PORT = process.env.PORT || 5000;
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Dealive API')
@@ -28,6 +30,7 @@ async function start() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Разрешённые HTTP методы
     credentials: true, // Если требуется передача cookies или авторизационных данных
   });
+
   await app.listen(PORT, () => {
     console.log('Server started on' + PORT);
   });

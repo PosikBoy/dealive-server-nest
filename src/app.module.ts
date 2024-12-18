@@ -9,6 +9,9 @@ import { AuthModule } from './auth/auth.module';
 import { FilesModule } from './files/files.module';
 import { TokensModule } from './tokens/tokens.module';
 import { SuggestionModule } from './suggestions/suggestions.module';
+import { OrderActionsModule } from './order-actions/order-actions.module';
+import { MessageModule } from './chats/messages/messages.module';
+import { ChatModule } from './chats/chat/chat.module';
 
 @Module({
   providers: [...databaseProviders],
@@ -26,6 +29,9 @@ import { SuggestionModule } from './suggestions/suggestions.module';
     FilesModule,
     TokensModule,
     SuggestionModule,
+    OrderActionsModule,
+    MessageModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

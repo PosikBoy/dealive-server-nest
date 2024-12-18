@@ -17,8 +17,10 @@ import { CouriersService } from '@/couriers/couriers.service';
 import { FilesService } from '@/files/files.service';
 import { Messages } from '@/constants/messages';
 import { PASSWORD_SALT } from '@/constants/auth';
-import { ClientWithoutSensitiveInfo } from './dtos/client-without-sensitive-info';
 import { JwtUser } from '@/types/jwt';
+import { UserService } from '@/users/user.service';
+import { UserRolesEnum } from '@/users/user.model';
+import moment from 'moment';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +29,7 @@ export class AuthService {
     private tokenService: TokensService,
     private courierService: CouriersService,
     private filesService: FilesService,
+    private userService: UserService,
   ) {}
 
   async clientRegistration(
@@ -38,21 +41,43 @@ export class AuthService {
       throw new BadRequestException(Messages.FILL_ALL_FIELDS);
     }
 
-    const candidate = await this.clientService.findClient('email', email, true);
+    const candidate = await this.userService.findUser(
+      'email',
+      email,
+      UserRolesEnum.CLIENT,
+    );
     if (candidate) {
       throw new ConflictException(Messages.USER_ALREADY_EXISTS);
     }
 
     const hashedPassword = await bcrypt.hash(password, PASSWORD_SALT);
 
-    const client = await this.clientService.create(email, hashedPassword);
-
-    const tokens = await this.tokenService.generateTokens({
-      id: client.id,
-      role: 'client',
+    const user = await this.userService.create({
+      email,
+      hashPass: hashedPassword,
+      role: UserRolesEnum.CLIENT,
     });
 
-    return { client, tokens: tokens };
+    const client = await this.clientService.create(user.id);
+    console.log(client);
+    console.log(user);
+    const tokens = await this.tokenService.generateTokens({
+      id: user.id,
+      role: UserRolesEnum.CLIENT,
+    });
+
+    return {
+      client: {
+        id: user.id,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        name: client.name,
+        role: user.role,
+        isEmailConfirmed: client.isEmailConfirmed,
+        isNumberConfirmed: client.isNumberConfirmed,
+      },
+      tokens: tokens,
+    };
   }
 
   async clientLogin(authDto: ClientAuthDto): Promise<IAuthClientResponse> {
@@ -62,27 +87,44 @@ export class AuthService {
       throw new BadRequestException(Messages.FILL_ALL_FIELDS);
     }
 
-    let client = await this.clientService.findClient('email', email, true);
+    let user = await this.userService.findUser(
+      'email',
+      email,
+      UserRolesEnum.CLIENT,
+      true,
+    );
 
-    if (!client) {
+    if (!user) {
       throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
     }
 
     let isPasswordValid = false;
-    if ('hashPass' in client) {
-      isPasswordValid = await bcrypt.compare(password, client.hashPass);
+    if ('hashPass' in user) {
+      isPasswordValid = await bcrypt.compare(password, user.hashPass);
     }
     if (!isPasswordValid) {
       throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
     }
 
     const tokens = await this.tokenService.generateTokens({
-      id: client.id,
+      id: user.id,
       role: 'client',
     });
-    client = await this.clientService.findClient('email', email);
 
-    return { client, tokens: tokens };
+    const client = await this.clientService.findClient(user.id);
+
+    return {
+      client: {
+        id: user.id,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        name: client.name,
+        role: user.role,
+        isEmailConfirmed: client.isEmailConfirmed,
+        isNumberConfirmed: client.isNumberConfirmed,
+      },
+      tokens: tokens,
+    };
   }
 
   async courierRegistration(
@@ -91,14 +133,16 @@ export class AuthService {
   ): Promise<ITokens> {
     const { phoneNumber, password, email } = courierDto;
 
-    const candidateByEmail = await this.courierService.findCourier(
+    const candidateByEmail = await this.userService.findUser(
       'email',
       email,
+      UserRolesEnum.COURIER,
     );
 
-    const candidateByPhone = await this.courierService.findCourier(
+    const candidateByPhone = await this.userService.findUser(
       'phoneNumber',
       phoneNumber,
+      UserRolesEnum.COURIER,
     );
 
     if (candidateByEmail || candidateByPhone) {
@@ -106,33 +150,47 @@ export class AuthService {
     }
 
     const hashPass = await bcrypt.hash(password, PASSWORD_SALT);
-    const documentLink = await this.filesService.saveImages(documentImages);
 
-    const courier = await this.courierService.createCourier({
-      ...courierDto,
-      documentLink,
+    const user = await this.userService.create({
+      phoneNumber,
+      email,
       hashPass,
+      role: UserRolesEnum.COURIER,
     });
+
+    const documentLink = await this.filesService.saveDocuments(documentImages);
+    const birthDate = new Date(courierDto.birthDate);
+    const courier = await this.courierService.createCourier(
+      {
+        ...courierDto,
+        birthDate,
+        documentLink,
+      },
+      user.id,
+    );
 
     const tokens = this.tokenService.generateTokens({
-      id: courier.id,
-      role: 'courier',
+      id: user.id,
+      role: UserRolesEnum.COURIER,
     });
+
     return tokens;
   }
 
   async courierLogin(loginCourierDto: CourierLoginDto): Promise<ITokens> {
     const { phoneNumber, password } = loginCourierDto;
 
-    const courier = await this.courierService.findCourier(
+    const courier = await this.userService.findUser(
       'phoneNumber',
       phoneNumber,
+      UserRolesEnum.COURIER,
       true,
     );
 
     if (!courier) {
       throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
     }
+
     let isPasswordValid;
     if ('hashPass' in courier) {
       isPasswordValid = await bcrypt.compare(password, courier.hashPass);
@@ -159,14 +217,16 @@ export class AuthService {
   }
 
   async existCourierCandidate(existCourierDto: ExistCandidateDto) {
-    const phoneNumberCandidate = await this.courierService.findCourier(
+    const phoneNumberCandidate = await this.userService.findUser(
       'phoneNumber',
       existCourierDto.phoneNumber,
+      UserRolesEnum.COURIER,
     );
 
-    const emailCandidate = await this.courierService.findCourier(
+    const emailCandidate = await this.userService.findUser(
       'email',
       existCourierDto.email,
+      UserRolesEnum.COURIER,
     );
 
     if (phoneNumberCandidate || emailCandidate) {
@@ -177,7 +237,7 @@ export class AuthService {
   }
 
   async isCourierApproved(user: JwtUser) {
-    const courier = await this.courierService.findCourier('id', user.id, true);
+    const courier = await this.courierService.findCourier(user.id);
     return courier.isApproved;
   }
 }

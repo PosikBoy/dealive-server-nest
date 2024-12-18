@@ -3,6 +3,8 @@ import { COURIERS_REPOSITORY } from '@/constants/sequelize';
 import { Inject, Injectable } from '@nestjs/common';
 import { Courier } from './couriers.model';
 import { CourierCreateDto } from './dtos/create-courier.dto';
+import { UserService } from '@/users/user.service';
+import { User, UserRolesEnum } from '@/users/user.model';
 
 @Injectable()
 export class CouriersService {
@@ -11,22 +13,13 @@ export class CouriersService {
   ) {}
 
   async findCourier(
-    field: 'email' | 'phoneNumber' | 'id',
-    data: string | number,
+    userId: number,
     includeSensitiveInfo: boolean = false,
   ): Promise<Courier | CourierWithoutSensitiveInfo | null> {
-    let whereCondition: any;
-
-    if (field === 'id') {
-      whereCondition = { id: data };
-    } else if (field === 'email') {
-      whereCondition = { email: data };
-    } else if (field === 'phoneNumber') {
-      whereCondition = { phoneNumber: data };
-    }
-
     const courier = await this.courierRepository.findOne({
-      where: whereCondition,
+      where: {
+        userId,
+      },
     });
 
     if (!courier) {
@@ -34,7 +27,7 @@ export class CouriersService {
     }
 
     if (includeSensitiveInfo) {
-      return courier;
+      return { ...courier.dataValues };
     }
 
     return new CourierWithoutSensitiveInfo(courier);
@@ -42,12 +35,17 @@ export class CouriersService {
 
   async createCourier(
     courierDto: CourierCreateDto,
+    userId,
   ): Promise<CourierWithoutSensitiveInfo> {
     try {
-      const courier = await this.courierRepository.create(courierDto);
+      const courier = await this.courierRepository.create({
+        userId,
+        ...courierDto,
+      });
       const courierWithoutSensitiveInfo = new CourierWithoutSensitiveInfo(
         courier,
       );
+
       return courierWithoutSensitiveInfo;
     } catch (error) {
       console.log(error);

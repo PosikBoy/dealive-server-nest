@@ -45,4 +45,18 @@ export const Messages = {
 
   /** Заказ уже взял другой курьер */
   ORDER_TAKE_ERROR: 'Заказ уже взял другой курьер',
+
+  ORDER_ACTION_NOT_FOUND: 'Этот статус заказа не найден',
+
+  PREVIOUS_ACTION_MUST_BE_COMPLETED:
+    'Предыдущее действие должно быть выполнено, прежде чем отмечать это действие',
+  FILES_WAS_UPLOADED_SUCCESSFULLY: 'Файлы успешно загружены',
+
+  YOU_ARE_NOT_IN_THIS_CHAT: 'Вы не состоите в этом чате',
+
+  NO_NEW_MESSAGES: 'Новых сообщений нет',
+
+  ACCESS_DENIED: 'Доступ запрещен',
+
+  FILE_NOT_FOUND: 'Файл не найден',
 };

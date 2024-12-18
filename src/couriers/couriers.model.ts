@@ -1,56 +1,34 @@
+import { User } from '@/users/user.model';
 import {
   Column,
   CreatedAt,
   DataType,
+  ForeignKey,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 
-interface CourierCreationAttrs {
+export interface CourierDataCreationAttrs {
+  userId: number;
   name: string;
   secondName: string;
   lastName: string;
-  email: string;
-  phoneNumber: string;
   birthDate: Date;
-  hashPass: string;
   documentNumber: string;
   documentLink: string;
 }
 
 @Table({ tableName: 'couriers' })
-export class Courier extends Model<Courier, CourierCreationAttrs> {
+export class Courier extends Model<Courier, CourierDataCreationAttrs> {
+  @ForeignKey(() => User)
   @Column({
-    primaryKey: true,
-    autoIncrement: true,
     type: DataType.INTEGER,
     unique: true,
+    primaryKey: true,
+    field: 'user_id',
   })
-  id: number;
-
-  @Column({
-    type: DataType.STRING(60),
-    allowNull: false,
-    unique: true,
-  })
-  email: string;
-
-  @Column({
-    type: DataType.STRING(20),
-    allowNull: false,
-    unique: true,
-    field: 'phone_number',
-  })
-  phoneNumber: string;
-
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: false,
-    unique: true,
-    field: 'document_link',
-  })
-  documentLink: string;
+  userId: number;
 
   @Column({
     type: DataType.STRING(30),
@@ -87,19 +65,20 @@ export class Courier extends Model<Courier, CourierCreationAttrs> {
   documentNumber: string;
 
   @Column({
-    type: DataType.BOOLEAN, // Здесь используется BOOLEAN
+    type: DataType.STRING(50),
+    allowNull: false,
+    unique: true,
+    field: 'document_link',
+  })
+  documentLink: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
     field: 'is_approved',
   })
-  isApproved: boolean; // default is not approved
-
-  @Column({
-    type: DataType.STRING(100),
-    allowNull: false,
-    field: 'hash_pass',
-  })
-  hashPass: string;
+  isApproved: boolean;
 
   @CreatedAt
   @Column({

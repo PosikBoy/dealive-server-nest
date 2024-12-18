@@ -17,7 +17,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:statuses": "ts-node src/orders/seed-order-statuses.ts cross-env NODE_ENV=development"
   },
   "dependencies": {
     "@nestjs/axios": "^3.1.2",
@@ -25,7 +26,7 @@
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",
-    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-express": "^10.4.15",
     "@nestjs/swagger": "^8.0.7",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
@@ -33,6 +34,7 @@
     "cookie-parser": "^1.4.7",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
+    "moment": "^2.30.1",
     "mysql2": "^3.11.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

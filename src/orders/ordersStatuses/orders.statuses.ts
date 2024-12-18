@@ -1,8 +1,8 @@
-export const orderStatuses = {
-  newOrder: 1,
-  inProcess: 2,
-  searchCourier: 3,
-  courierInTransit: 4,
-  delivered: 5,
-  cancelled: 6,
-};
+export enum OrderStatusEnum {
+  NEW_ORDER = 1,
+  IN_PROCESS = 2,
+  SEARCH_COURIER = 3,
+  COURIER_IN_TRANSIT = 4,
+  DELIVERED = 5,
+  CANCELLED = 6,
+}

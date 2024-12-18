@@ -1,83 +1,80 @@
 import { ClientWithoutSensitiveInfo } from './../auth/dtos/client-without-sensitive-info';
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CLIENTS_REPOSITORY } from '@/constants/sequelize';
 import { Client } from './clients.model';
 import { ClientEditInfoDto } from './dtos/clients.dto';
 import { Messages } from '@/constants/messages';
+import { UserService } from '@/users/user.service';
+import { User, UserRolesEnum } from '@/users/user.model';
+import { UserWithoutSensitiveInfoDto } from '@/users/dtos/user-without-sensitive-info.dto';
 
 @Injectable()
 export class ClientsService {
   constructor(
     @Inject(CLIENTS_REPOSITORY) private clientsRepository: typeof Client,
+    private userService: UserService,
   ) {}
 
-  async findClient(
-    field: 'email' | 'phoneNumber' | 'id',
-    data: string | number,
-    includeSensitiveInfo: boolean = false,
-  ): Promise<Client | ClientWithoutSensitiveInfo | null> {
-    let whereCondition: any;
-
-    if (field === 'id') {
-      whereCondition = { id: data };
-    } else if (field === 'email') {
-      whereCondition = { email: data };
-    } else if (field === 'phoneNumber') {
-      whereCondition = { phoneNumber: data };
-    }
-
+  async findClient(userId): Promise<Client> {
     const client = await this.clientsRepository.findOne({
-      where: whereCondition,
+      where: {
+        userId,
+      },
     });
 
-    if (!client) {
-      return null;
-    }
-
-    if (includeSensitiveInfo) {
-      return client;
-    }
-
-    return new ClientWithoutSensitiveInfo(client);
+    return client.dataValues;
   }
 
-  async create(
-    email: string,
-    hashPass: string,
-  ): Promise<ClientWithoutSensitiveInfo | null> {
-    const client = await this.clientsRepository.create({ email, hashPass });
-    return new ClientWithoutSensitiveInfo(client) || null;
+  async create(userId): Promise<ClientWithoutSensitiveInfo | null> {
+    const client = await this.clientsRepository.create({ userId });
+
+    return client.dataValues;
   }
 
   async editClientInfo(
     id: number,
     newInfo: ClientEditInfoDto,
   ): Promise<ClientWithoutSensitiveInfo> {
-    const candidateByPhone = await this.clientsRepository.findOne({
-      where: { phoneNumber: newInfo.phoneNumber },
-    });
-    const candidateByEmail = await this.clientsRepository.findOne({
-      where: { email: newInfo.email },
-    });
-    console.log(
-      'candidateByPhone, candidateByEmail',
-      !candidateByPhone,
-      !candidateByEmail,
+    const candidateByPhone = await this.userService.findUser(
+      'phoneNumber',
+      newInfo.phoneNumber,
+      UserRolesEnum.CLIENT,
+      false,
     );
+    const candidateByEmail = await this.userService.findUser(
+      'email',
+      newInfo.email,
+      UserRolesEnum.CLIENT,
+      false,
+    );
+    console.log(id, candidateByPhone, candidateByEmail);
     if (
       (candidateByPhone && candidateByPhone?.id !== id) ||
       (candidateByEmail && candidateByEmail?.id !== id)
     ) {
       throw new ConflictException(Messages.USER_ALREADY_EXISTS);
     }
+
     const client = await this.clientsRepository.findByPk(id);
     client.name = newInfo.name;
-    client.email = newInfo.email;
-    client.phoneNumber = newInfo.phoneNumber;
-    client.save();
+    await client.save();
 
-    //Чистим лишние данные
-    const clientWithoutSensitiveInfo = new ClientWithoutSensitiveInfo(client);
-    return clientWithoutSensitiveInfo;
+    const editUserDto = {
+      phoneNumber: newInfo.phoneNumber,
+      email: newInfo.email,
+      id,
+    };
+
+    const user = await this.userService.editUser(
+      editUserDto,
+      UserRolesEnum.CLIENT,
+    );
+    const userWithoutSensitiveInfo = new UserWithoutSensitiveInfoDto(user);
+    return { ...client, ...userWithoutSensitiveInfo };
   }
 }

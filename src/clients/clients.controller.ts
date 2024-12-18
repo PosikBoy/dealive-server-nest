@@ -7,13 +7,18 @@ import { Roles } from '@/auth/decorators/roles-auth.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ApiResponses } from '@/constants/swaggerResponses';
+import { UserService } from '@/users/user.service';
+import { UserRolesEnum } from '@/users/user.model';
 
 @ApiTags('Работа с клиентами')
 @Roles('client')
 @UseGuards(RolesGuard)
 @Controller('client')
 export class ClientsController {
-  constructor(private clientsService: ClientsService) {}
+  constructor(
+    private clientsService: ClientsService,
+    private userService: UserService,
+  ) {}
 
   @ApiOperation({ summary: 'Получение информации о клиенте' })
   @ApiResponse({
@@ -32,7 +37,14 @@ export class ClientsController {
   @Get()
   async getClientInfo(@Req() request: Request) {
     const userId = request.user.id;
-    return await this.clientsService.findClient('id', userId);
+    const user = this.userService.findUser(
+      'id',
+      userId,
+      UserRolesEnum.CLIENT,
+      false,
+    );
+    const client = await this.clientsService.findClient(userId);
+    return { ...client, ...user };
   }
 
   @ApiOperation({ summary: 'Редактирование информации о клиенте' })

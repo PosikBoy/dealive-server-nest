@@ -3,6 +3,9 @@ interface IClient {
   phoneNumber: string;
   name: string;
   email: string;
+  role: string;
+  isEmailConfirmed: boolean;
+  isNumberConfirmed: boolean;
 }
 
 interface ITokens {
