@@ -7,6 +7,7 @@ import { Roles } from '@/auth/decorators/roles-auth.decorator';
 import { ApiResponses } from '@/constants/swaggerResponses';
 import { UserService } from '@/users/user.service';
 import { UserRolesEnum } from '@/users/user.model';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 
 @ApiTags('Работа с курьерами')
 @Roles('courier')
@@ -42,7 +43,9 @@ export class CouriersController {
       UserRolesEnum.COURIER,
       false,
     );
+
     const courier = await this.couriersService.findCourier(user.id);
+
     return { ...courier, ...user };
   }
 }

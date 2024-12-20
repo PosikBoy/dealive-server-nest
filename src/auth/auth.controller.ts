@@ -27,11 +27,15 @@ import { Messages } from '@/constants/messages';
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from './auth.guards';
 import { Roles } from './decorators/roles-auth.decorator';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 
 @ApiTags('Авторизация клиентов')
 @Controller('client')
 export class ClientAuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private telegramNotifyService: TelegramNotifyService,
+  ) {}
 
   @ApiHeader({
     name: 'Set-Cookie',
@@ -88,7 +92,7 @@ export class ClientAuthController {
       httpOnly: true,
       maxAge: REFRESH_TOKEN_MAX_AGE,
     });
-
+    this.telegramNotifyService.newClient(client);
     return res.send({ client, accessToken: tokens.accessToken });
   }
 
@@ -103,7 +107,6 @@ export class ClientAuthController {
   async refresh(@Req() request: Request, @Res() res: Response) {
     const refreshToken = request.cookies[REFRESH_TOKEN];
     const tokens = await this.authService.refreshTokens(refreshToken);
-
     res.cookie(REFRESH_TOKEN, tokens.refreshToken, {
       httpOnly: true,
       maxAge: REFRESH_TOKEN_MAX_AGE,
@@ -170,7 +173,6 @@ export class CourierAuthController {
     @Body() courierRegisterDto: CourierRegisterDto,
     @UploadedFiles() documentFiles: Express.Multer.File[],
   ) {
-    console.log(courierRegisterDto);
     return await this.authService.courierRegistration(
       courierRegisterDto,
       documentFiles,

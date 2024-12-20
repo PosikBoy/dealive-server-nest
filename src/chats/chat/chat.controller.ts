@@ -10,7 +10,6 @@ export class ChatController {
   @Post('create')
   async createChat(@Req() request: Request) {
     const user = request.user;
-    console.log('user', user);
 
     const chat = await this.chatService.createChat(user);
     return chat;

@@ -19,6 +19,7 @@ import { OrderActionService } from '@/order-actions/order-actions.service';
 import { Courier } from '@/couriers/couriers.model';
 import { UserService } from '@/users/user.service';
 import { UserRolesEnum } from '@/users/user.model';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 
 @Injectable()
 export class OrdersService {
@@ -28,6 +29,7 @@ export class OrdersService {
     private clientService: ClientsService,
     private orderActionsService: OrderActionService,
     private userService: UserService,
+    private telegramNotifyService: TelegramNotifyService,
   ) {}
 
   async getAllOrders(user: JwtUser): Promise<Order[]> {
@@ -141,8 +143,8 @@ export class OrdersService {
   //Клиент создает заказ
   async createOrder(createOrderDto: CreateOrderDto, user: JwtUser) {
     const { parcelType, weight, price, addresses } = createOrderDto;
-
     // Проверка входных данных
+
     if (
       !parcelType ||
       !weight ||
@@ -157,6 +159,7 @@ export class OrdersService {
     const invalidAddress = addresses.some((address) => {
       return !address.address || !address.phoneNumber;
     });
+
     if (invalidAddress) {
       throw new BadRequestException(Messages.ORDER_CREATE_ERROR);
     }
@@ -205,7 +208,7 @@ export class OrdersService {
       },
     });
     const actions = await this.orderActionsService.generate(orderFromDb);
-
+    this.telegramNotifyService.newOrder(orderFromDb);
     // Возвращаем созданный заказ с адресами
     return { ...order.dataValues, addresses: createdAddresses, actions };
   }

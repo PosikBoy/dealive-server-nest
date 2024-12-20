@@ -55,7 +55,7 @@ export class MessagesService {
         // Если событие не произошло, возвращаем пустой ответ
         this.eventEmitter.off(eventName, messageHandler);
         resolve(null);
-      }, 10000);
+      }, 15000);
     });
   }
 

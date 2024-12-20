@@ -12,6 +12,7 @@ import { SuggestionModule } from './suggestions/suggestions.module';
 import { OrderActionsModule } from './order-actions/order-actions.module';
 import { MessageModule } from './chats/messages/messages.module';
 import { ChatModule } from './chats/chat/chat.module';
+import { TelegramNotifyModule } from './telegram-notify/telegram-notify.module';
 
 @Module({
   providers: [...databaseProviders],
@@ -32,6 +33,7 @@ import { ChatModule } from './chats/chat/chat.module';
     OrderActionsModule,
     MessageModule,
     ChatModule,
+    TelegramNotifyModule,
   ],
 })
 export class AppModule {}

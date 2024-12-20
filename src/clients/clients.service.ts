@@ -10,7 +10,7 @@ import { Client } from './clients.model';
 import { ClientEditInfoDto } from './dtos/clients.dto';
 import { Messages } from '@/constants/messages';
 import { UserService } from '@/users/user.service';
-import { User, UserRolesEnum } from '@/users/user.model';
+import { UserRolesEnum } from '@/users/user.model';
 import { UserWithoutSensitiveInfoDto } from '@/users/dtos/user-without-sensitive-info.dto';
 
 @Injectable()

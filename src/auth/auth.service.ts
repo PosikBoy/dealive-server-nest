@@ -20,7 +20,7 @@ import { PASSWORD_SALT } from '@/constants/auth';
 import { JwtUser } from '@/types/jwt';
 import { UserService } from '@/users/user.service';
 import { UserRolesEnum } from '@/users/user.model';
-import moment from 'moment';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +30,7 @@ export class AuthService {
     private courierService: CouriersService,
     private filesService: FilesService,
     private userService: UserService,
+    private telegramNotifyService: TelegramNotifyService,
   ) {}
 
   async clientRegistration(
@@ -59,8 +60,6 @@ export class AuthService {
     });
 
     const client = await this.clientService.create(user.id);
-    console.log(client);
-    console.log(user);
     const tokens = await this.tokenService.generateTokens({
       id: user.id,
       role: UserRolesEnum.CLIENT,
@@ -173,7 +172,7 @@ export class AuthService {
       id: user.id,
       role: UserRolesEnum.COURIER,
     });
-
+    this.telegramNotifyService.newCourier(user, courier);
     return tokens;
   }
 
