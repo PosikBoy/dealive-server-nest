@@ -11,7 +11,10 @@ import { CreateOrderDto } from './dtos/create-order.dto';
 import { JwtUser } from '@/types/jwt';
 import { Messages } from '@/constants/messages';
 import { Op } from 'sequelize';
-import { OrderWithoutSensitiveInfoDto } from './dtos/courier-order.dto';
+import {
+  AddressWithGeoData,
+  OrderWithoutSensitiveInfoDto,
+} from './dtos/courier-order.dto';
 import { ClientsService } from '@/clients/clients.service';
 import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
 import { OrderAction } from '@/order-actions/order-actions.model';
@@ -20,6 +23,7 @@ import { Courier } from '@/couriers/couriers.model';
 import { UserService } from '@/users/user.service';
 import { UserRolesEnum } from '@/users/user.model';
 import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
+import { GeodataService } from '@/geodata/geodata.service';
 
 @Injectable()
 export class OrdersService {
@@ -30,6 +34,7 @@ export class OrdersService {
     private orderActionsService: OrderActionService,
     private userService: UserService,
     private telegramNotifyService: TelegramNotifyService,
+    private geodataService: GeodataService,
   ) {}
 
   async getAllOrders(user: JwtUser): Promise<Order[]> {
@@ -78,10 +83,29 @@ export class OrdersService {
           model: OrderAction,
         },
       ],
+      order: [
+        ['actions', 'sequence', 'ASC'],
+        ['addresses', 'id', 'ASC'],
+      ],
     });
+
     if (!order) {
       throw new NotFoundException(Messages.ORDER_NOT_FOUND);
     }
+
+    const addressesGeodata = await this.geodataService.getAddresses(
+      order.addresses,
+    );
+
+    const addressesWithGeodata = order.addresses.map((address, index) => {
+      return new AddressWithGeoData(address, addressesGeodata[index]);
+    });
+
+    const orderWithGeo = {
+      ...order.dataValues,
+      addresses: addressesWithGeodata,
+    };
+
     if (user.role === 'client' && order.clientId !== user.id) {
       throw new NotFoundException(Messages.ORDER_NOT_FOUND);
     }
@@ -91,7 +115,7 @@ export class OrdersService {
         throw new NotFoundException(Messages.ORDER_NOT_FOUND);
       }
 
-      return new OrderWithoutSensitiveInfoDto(order);
+      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
     }
 
     if (
@@ -99,9 +123,10 @@ export class OrdersService {
       order.courierId === user.id &&
       order.statusId != OrderStatusEnum.COURIER_IN_TRANSIT
     ) {
-      return new OrderWithoutSensitiveInfoDto(order);
+      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
     }
-    return order;
+
+    return orderWithGeo;
   }
 
   //Курьер получает все доступные заказы без чувствительной информации
@@ -120,14 +145,29 @@ export class OrdersService {
         },
       },
     });
-    return orders;
+    const ordersWithGeo = orders.map(async (order) => {
+      const addressesGeodata = await this.geodataService.getAddresses(
+        order.addresses,
+      );
+
+      const addressesWithGeodata = order.addresses.map((address, index) => {
+        return new AddressWithGeoData(address, addressesGeodata[index]);
+      });
+
+      const orderWithGeo = {
+        ...order.dataValues,
+        addresses: addressesWithGeodata,
+      };
+      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
+    });
+    return Promise.all(ordersWithGeo);
   }
 
   //Курьер получает все активные заказы
   async getActiveOrders(courier: JwtUser) {
     const courierId = courier.id;
 
-    const order = this.ordersRepository.findAll({
+    const orders = await this.ordersRepository.findAll({
       where: {
         [Op.and]: [
           { courierId },
@@ -138,7 +178,23 @@ export class OrdersService {
         model: Address,
       },
     });
-    return order;
+
+    const ordersWithGeo = orders.map(async (order) => {
+      const addressesGeodata = await this.geodataService.getAddresses(
+        order.addresses,
+      );
+
+      const addressesWithGeodata = order.addresses.map((address, index) => {
+        return new AddressWithGeoData(address, addressesGeodata[index]);
+      });
+
+      const orderWithGeo = {
+        ...order.dataValues,
+        addresses: addressesWithGeodata,
+      };
+      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
+    });
+    return Promise.all(ordersWithGeo);
   }
   //Клиент создает заказ
   async createOrder(createOrderDto: CreateOrderDto, user: JwtUser) {

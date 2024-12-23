@@ -138,7 +138,7 @@ export class Order extends Model<Order, OrderCreationAttrs> {
   @HasMany(() => Address)
   addresses: Address[];
 
-  @HasMany(() => OrderAction)
+  @HasMany(() => OrderAction, 'order_id')
   actions: OrderAction[];
 
   @BelongsTo(() => OrderStatus)

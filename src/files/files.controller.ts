@@ -22,11 +22,6 @@ import { Request, Response } from 'express';
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  @Get('test')
-  test() {
-    return 'test';
-  }
-
   @UseInterceptors(
     FileFieldsInterceptor(
       [

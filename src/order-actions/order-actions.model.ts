@@ -1,3 +1,4 @@
+import { Address } from '@/addresses/addresses.model';
 import { Order } from '@/orders/orders.model';
 import {
   Table,
@@ -24,6 +25,7 @@ interface OrderActionCreationAttrs {
   actionType: OrderActionType;
   description: string;
   sequence: number;
+  addressId?: number;
 }
 
 @Table({
@@ -54,6 +56,9 @@ export class OrderAction extends Model<OrderAction, OrderActionCreationAttrs> {
   @Column({ type: DataType.STRING, allowNull: true })
   description: string; // Описание действия
 
+  @ForeignKey(() => Address)
+  @Column({ type: DataType.INTEGER, allowNull: true, field: 'address_id' })
+  addressId: number; // Внешний ключ на таблицу адресов
   // @Column({ type: DataType.DATE, allowNull: true })
   // scheduledAt: Date; // Запланированное время выполнения
 

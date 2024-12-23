@@ -45,7 +45,6 @@ export class CouriersService {
       const courierWithoutSensitiveInfo = new CourierWithoutSensitiveInfo(
         courier,
       );
-
       return courierWithoutSensitiveInfo;
     } catch (error) {
       console.log(error);

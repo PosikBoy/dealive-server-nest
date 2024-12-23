@@ -23,6 +23,12 @@ export class OrderActionService {
     if (user.id !== order.courierId) {
       throw new BadRequestException(Messages.ORDER_ACTION_NOT_FOUND);
     }
+
+    if (currentStatus.actionType === OrderActionType.PAY_COMMISION) {
+      throw new BadRequestException(
+        'Это действие нельзя выполнить самостоятельно',
+      );
+    }
     // Если это первое действие, пропустить проверку
     if (currentStatus.sequence === 1) {
       currentStatus.isCompleted = true;
@@ -56,6 +62,7 @@ export class OrderActionService {
         actionType: OrderActionType.GO_TO,
         description: `Выезжаю на адрес ${address.address}`,
         orderId: order.id,
+        addressId: address.id,
         sequence,
       });
       sequence += 1;
@@ -64,6 +71,8 @@ export class OrderActionService {
         actionType: OrderActionType.ARRIVED_AT,
         description: `Прибыл на адрес ${address.address}`,
         orderId: order.id,
+        addressId: address.id,
+
         sequence,
       });
       sequence += 1;
@@ -73,14 +82,18 @@ export class OrderActionService {
           actionType: OrderActionType.PICKUP,
           description: `Получил ${order.parcelType}`,
           orderId: order.id,
+          addressId: address.id,
+
           sequence,
         });
         sequence += 1;
 
         await this.orderActionsRepository.create({
           actionType: OrderActionType.COLLECT_PAYMENT,
-          description: `Получил оплату в размере ${order.price}`,
+          description: `Получил оплату в размере ${order.price} ₽  `,
           orderId: order.id,
+          addressId: address.id,
+
           sequence,
         });
         sequence += 1;
@@ -89,6 +102,7 @@ export class OrderActionService {
           actionType: OrderActionType.DELIVER,
           description: `Отдал ${order.parcelType}`,
           orderId: order.id,
+          addressId: address.id,
           sequence,
         });
         sequence += 1;

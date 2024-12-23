@@ -13,6 +13,7 @@ import { OrderActionsModule } from './order-actions/order-actions.module';
 import { MessageModule } from './chats/messages/messages.module';
 import { ChatModule } from './chats/chat/chat.module';
 import { TelegramNotifyModule } from './telegram-notify/telegram-notify.module';
+import { GeodataModule } from './geodata/geodata.module';
 
 @Module({
   providers: [...databaseProviders],
@@ -34,6 +35,7 @@ import { TelegramNotifyModule } from './telegram-notify/telegram-notify.module';
     MessageModule,
     ChatModule,
     TelegramNotifyModule,
+    GeodataModule,
   ],
 })
 export class AppModule {}

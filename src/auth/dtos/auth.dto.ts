@@ -67,7 +67,7 @@ export class CourierRegisterDto {
   lastName: string;
 
   @ApiProperty({
-    example: '1990-01-01',
+    example: '04.08.2005',
     description: 'Дата рождения',
   })
   birthDate: Date;

@@ -8,6 +8,7 @@ import { ClientsModule } from '@/clients/clients.module';
 import { OrderActionsModule } from '@/order-actions/order-actions.module';
 import { UserModule } from '@/users/user.module';
 import { TelegramNotifyModule } from '@/telegram-notify/telegram-notify.module';
+import { GeodataModule } from '@/geodata/geodata.module';
 
 @Module({
   providers: [OrdersService, ...ordersRepository, ...addressesRepository],
@@ -18,6 +19,7 @@ import { TelegramNotifyModule } from '@/telegram-notify/telegram-notify.module';
     OrderActionsModule,
     UserModule,
     TelegramNotifyModule,
+    GeodataModule,
   ],
 })
 export class OrdersModule {}
