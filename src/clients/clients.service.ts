@@ -61,6 +61,7 @@ export class ClientsService {
     }
 
     const client = await this.clientsRepository.findByPk(id);
+    console.log(newInfo);
     client.name = newInfo.name;
     await client.save();
 
@@ -74,7 +75,9 @@ export class ClientsService {
       editUserDto,
       UserRolesEnum.CLIENT,
     );
+
     const userWithoutSensitiveInfo = new UserWithoutSensitiveInfoDto(user);
-    return { ...client, ...userWithoutSensitiveInfo };
+    console.log(client.dataValues, userWithoutSensitiveInfo);
+    return { ...client.dataValues, ...userWithoutSensitiveInfo };
   }
 }

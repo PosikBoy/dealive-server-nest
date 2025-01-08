@@ -68,6 +68,7 @@ export class ClientsController {
   ) {
     const userId = request.user.id;
     const client = await this.clientsService.editClientInfo(userId, body);
+    console.log(client);
     return client;
   }
 }
