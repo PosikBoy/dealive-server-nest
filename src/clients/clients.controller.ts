@@ -2,7 +2,7 @@ import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { RolesGuard } from '@/auth/auth.guards';
 import { Request } from 'express';
-import { ClientEditInfoDto } from './dtos/clients.dto';
+import { ClientDto, ClientEditInfoDto } from './dtos/clients.dto';
 import { Roles } from '@/auth/decorators/roles-auth.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -37,14 +37,14 @@ export class ClientsController {
   @Get()
   async getClientInfo(@Req() request: Request) {
     const userId = request.user.id;
-    const user = this.userService.findUser(
+    const user = await this.userService.findUser(
       'id',
       userId,
       UserRolesEnum.CLIENT,
       false,
     );
     const client = await this.clientsService.findClient(userId);
-    return { ...client, ...user };
+    return { ...client, ...user } as ClientDto;
   }
 
   @ApiOperation({ summary: 'Редактирование информации о клиенте' })

@@ -1,5 +1,6 @@
 import { Client } from '@/clients/clients.model';
 import { Courier } from '@/couriers/couriers.model';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreatedAt,
@@ -33,6 +34,10 @@ export class User extends Model<User, UserCreationAttrs> {
   })
   id: number;
 
+  @ApiProperty({
+    example: 'example@example.com',
+    description: 'Электронная почта',
+  })
   @Column({
     type: DataType.STRING(60),
     allowNull: false,
@@ -40,6 +45,10 @@ export class User extends Model<User, UserCreationAttrs> {
   })
   email: string;
 
+  @ApiProperty({
+    example: '+7 (999) 999-99-99',
+    description: 'Номер телефона',
+  })
   @Column({
     type: DataType.STRING(20),
     unique: false,
