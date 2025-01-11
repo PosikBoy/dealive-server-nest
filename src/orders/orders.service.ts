@@ -37,7 +37,9 @@ export class OrdersService {
     private geodataService: GeodataService,
   ) {}
 
-  async getAllOrders(user: JwtUser): Promise<Order[]> {
+  async getAllOrders(
+    user: JwtUser,
+  ): Promise<Order[] | OrderWithoutSensitiveInfoDto[]> {
     const { id } = user;
     let orders: Order[];
 
@@ -63,6 +65,24 @@ export class OrdersService {
       });
     }
 
+    if (user.role == 'courier') {
+      const ordersWithGeo = orders.map(async (order) => {
+        const addressesGeodata = await this.geodataService.getAddresses(
+          order.addresses,
+        );
+
+        const addressesWithGeodata = order.addresses.map((address, index) => {
+          return new AddressWithGeoData(address, addressesGeodata[index]);
+        });
+
+        const orderWithGeo = {
+          ...order.dataValues,
+          addresses: addressesWithGeodata,
+        };
+        return new OrderWithoutSensitiveInfoDto(orderWithGeo);
+      });
+      return Promise.all(ordersWithGeo);
+    }
     if (!orders) {
       throw new NotFoundException(Messages.ORDERS_NOT_FOUND);
     }
