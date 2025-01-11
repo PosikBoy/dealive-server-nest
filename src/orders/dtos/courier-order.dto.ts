@@ -51,7 +51,7 @@ class AddressWithoutSensitiveInfo {
     this.id = address.id;
     this.orderId = address.orderId;
     this.address = address.address;
-    this.info = address.info;
+    this.info = address.info.replace(/\d/g, '*');
     this.geoData = address.geoData;
   }
 }
