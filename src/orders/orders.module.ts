@@ -9,6 +9,7 @@ import { OrderActionsModule } from '@/order-actions/order-actions.module';
 import { UserModule } from '@/users/user.module';
 import { TelegramNotifyModule } from '@/telegram-notify/telegram-notify.module';
 import { GeodataModule } from '@/geodata/geodata.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   providers: [OrdersService, ...ordersRepository, ...addressesRepository],
@@ -20,6 +21,12 @@ import { GeodataModule } from '@/geodata/geodata.module';
     UserModule,
     TelegramNotifyModule,
     GeodataModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
   ],
 })
 export class OrdersModule {}

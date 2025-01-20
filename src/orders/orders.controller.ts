@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -18,11 +19,22 @@ import { Messages } from '@/constants/messages';
 import { swaggerExamples } from '@/constants/swaggerExamples';
 import { ApiResponses } from '@/constants/swaggerResponses';
 import TakeOrderDto from './dtos/take-order.dto';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Работа с заказами')
 @Controller('')
 export class OrdersController {
   constructor(private ordersService: OrdersService) {}
+
+  // @UseGuards(ThrottlerGuard)
+  @Get('/order/track')
+  async trackOrder(
+    @Query('trackNumber') trackNumber: string,
+    @Query('code') code: string,
+  ) {
+    const order = await this.ordersService.trackOrder(trackNumber, code);
+    return order;
+  }
 
   @ApiOperation({ summary: 'Получение заказа по id' })
   @ApiResponse({
@@ -134,7 +146,6 @@ export class OrdersController {
       takeOrderDto.orderId,
       user,
     );
-    console.log('order', order);
     return order;
   }
 }

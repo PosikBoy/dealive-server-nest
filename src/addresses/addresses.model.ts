@@ -75,12 +75,18 @@ export class Address extends Model<Address, AddressCreationAttrs> {
   phoneName?: string;
 
   @Column({
-    type: DataType.STRING(512),
+    type: DataType.STRING(1024),
     allowNull: true,
     defaultValue: null,
   })
   info?: string;
 
+  @Column({
+    type: DataType.STRING(1024),
+    allowNull: true,
+    defaultValue: null,
+  })
+  comment?: string;
   @CreatedAt
   @Column({
     type: DataType.DATE,

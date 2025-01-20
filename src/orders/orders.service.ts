@@ -14,16 +14,18 @@ import { Op } from 'sequelize';
 import {
   AddressWithGeoData,
   OrderWithoutSensitiveInfoDto,
-} from './dtos/courier-order.dto';
-import { ClientsService } from '@/clients/clients.service';
+} from './dtos/order.dto';
+
 import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
-import { OrderAction } from '@/order-actions/order-actions.model';
-import { OrderActionService } from '@/order-actions/order-actions.service';
-import { Courier } from '@/couriers/couriers.model';
-import { UserService } from '@/users/user.service';
 import { UserRolesEnum } from '@/users/user.model';
+import { Courier } from '@/couriers/couriers.model';
+import { OrderAction } from '@/order-actions/order-actions.model';
+
 import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 import { GeodataService } from '@/geodata/geodata.service';
+import { OrderActionService } from '@/order-actions/order-actions.service';
+import { UserService } from '@/users/user.service';
+import { ClientsService } from '@/clients/clients.service';
 
 @Injectable()
 export class OrdersService {
@@ -216,6 +218,7 @@ export class OrdersService {
     });
     return Promise.all(ordersWithGeo);
   }
+
   //Клиент создает заказ
   async createOrder(createOrderDto: CreateOrderDto, user: JwtUser) {
     const { parcelType, weight, price, addresses } = createOrderDto;
@@ -258,7 +261,9 @@ export class OrdersService {
       if ('phoneNumber' in userDB) phoneNumber = userDB.phoneNumber || '';
       phoneName = client.name;
     }
-
+    const trackNumber =
+      'MSK' + Math.random().toString(36).substring(2, 13).toUpperCase();
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     // Создание заказа
     const order = await this.ordersRepository.create({
       parcelType,
@@ -267,6 +272,8 @@ export class OrdersService {
       clientId,
       phoneNumber,
       phoneName,
+      trackNumber,
+      code,
     });
     // Создание адресов, связанных с заказом
 
@@ -313,5 +320,27 @@ export class OrdersService {
       throw new BadRequestException(Messages.ORDER_CANCEL_NOT_AVAILABLE);
     }
     return order;
+  }
+
+  async trackOrder(trackNumber: string, code: string) {
+    const order = await this.ordersRepository.findOne({
+      where: {
+        trackNumber,
+      },
+      include: [
+        {
+          model: Address,
+        },
+        {
+          model: OrderAction,
+        },
+      ],
+    });
+
+    if (order?.code != code || !order) {
+      throw new NotFoundException(Messages.ORDER_TRACK_ERROR);
+    }
+
+    return order.dataValues;
   }
 }

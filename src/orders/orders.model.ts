@@ -23,6 +23,8 @@ export interface OrderCreationAttrs {
   parcelType: string;
   weight: string;
   price: number;
+  trackNumber: string;
+  code: string;
 }
 @Table({
   tableName: 'orders',
@@ -33,6 +35,8 @@ export interface OrderCreationAttrs {
     {
       fields: ['courier_id'],
     },
+    { fields: ['track_number'] },
+
     { fields: ['status_id'] },
     { fields: ['status_id', 'date'] },
   ],
@@ -120,6 +124,19 @@ export class Order extends Model<Order, OrderCreationAttrs> {
     field: 'courier_id',
   })
   courierId?: number;
+
+  @Column({
+    type: DataType.STRING(128),
+    allowNull: true,
+    field: 'track_number',
+  })
+  trackNumber?: string;
+
+  @Column({
+    type: DataType.STRING(6),
+    allowNull: true,
+  })
+  code?: string;
 
   @CreatedAt
   @Column({

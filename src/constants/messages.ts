@@ -48,6 +48,8 @@ export const Messages = {
 
   ORDER_ACTION_NOT_FOUND: 'Этот статус заказа не найден',
 
+  ORDER_TRACK_ERROR: 'Неправильный трек-номер или код',
+
   PREVIOUS_ACTION_MUST_BE_COMPLETED:
     'Предыдущее действие должно быть выполнено, прежде чем отмечать это действие',
   FILES_WAS_UPLOADED_SUCCESSFULLY: 'Файлы успешно загружены',

@@ -4,10 +4,10 @@ const { DataTypes } = require('sequelize');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface) {
     await queryInterface.addColumn('order_actions', 'address_id', {
       type: DataTypes.INTEGER,
-      allowNull: true, // Укажите `false`, если поле обязательно
+      allowNull: true,
       references: {
         model: 'order_addresses',
         key: 'id',
@@ -15,7 +15,7 @@ module.exports = {
     });
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.removeColumn('order_actions', 'address_id');
   },
 };

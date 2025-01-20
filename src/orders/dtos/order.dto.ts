@@ -1,5 +1,4 @@
 import { Address } from '@/addresses/addresses.model';
-import { Order } from '../orders.model';
 import { OrderAction } from '@/order-actions/order-actions.model';
 
 export class IOrderWithGeo {
@@ -15,6 +14,8 @@ export class IOrderWithGeo {
   courierId?: number;
   actions: OrderAction[];
   addresses: AddressWithGeoData[];
+  trackNumber?: string;
+  code?: string;
 }
 
 export class AddressWithGeoData {
