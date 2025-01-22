@@ -15,6 +15,7 @@ import {
 import { OrderStatus } from './order-statuses.model';
 import { OrderAction } from '@/order-actions/order-actions.model';
 import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
+import { User } from '@/users/user.model';
 
 export interface OrderCreationAttrs {
   clientId?: number;

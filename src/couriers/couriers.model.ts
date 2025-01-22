@@ -1,5 +1,6 @@
 import { User } from '@/users/user.model';
 import {
+  BelongsTo,
   Column,
   CreatedAt,
   DataType,
@@ -93,4 +94,7 @@ export class Courier extends Model<Courier, CourierDataCreationAttrs> {
     field: 'updated_at',
   })
   updatedAt?: Date;
+
+  @BelongsTo(() => User) // Ассоциация "принадлежит" User
+  user: User;
 }

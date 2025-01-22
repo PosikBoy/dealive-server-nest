@@ -17,7 +17,7 @@ import {
 } from './dtos/order.dto';
 
 import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
-import { UserRolesEnum } from '@/users/user.model';
+import { User, UserRolesEnum } from '@/users/user.model';
 import { Courier } from '@/couriers/couriers.model';
 import { OrderAction } from '@/order-actions/order-actions.model';
 
@@ -26,6 +26,10 @@ import { GeodataService } from '@/geodata/geodata.service';
 import { OrderActionService } from '@/order-actions/order-actions.service';
 import { UserService } from '@/users/user.service';
 import { ClientsService } from '@/clients/clients.service';
+
+interface CourierWithPhone extends Courier {
+  phoneNumber?: string;
+}
 
 @Injectable()
 export class OrdersService {
@@ -334,6 +338,16 @@ export class OrdersService {
         {
           model: OrderAction,
         },
+        {
+          model: Courier,
+          attributes: ['name', 'secondName', 'lastName', 'userId'],
+          include: [
+            {
+              model: User,
+              attributes: ['phoneNumber'],
+            },
+          ],
+        },
       ],
     });
 
@@ -341,6 +355,14 @@ export class OrdersService {
       throw new NotFoundException(Messages.ORDER_TRACK_ERROR);
     }
 
-    return order.dataValues;
+    const orderData = {
+      ...order.dataValues,
+      courier: {
+        ...order.courier?.dataValues,
+        phoneNumber: order.courier?.user.phoneNumber,
+      },
+    };
+
+    return orderData;
   }
 }
