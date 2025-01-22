@@ -22,9 +22,10 @@ async function start() {
   app.use(cookieParser());
   app.enableCors({
     origin: [
-      'http://localhost:3000', // Разрешите локальную разработку сайта
+      'http://localhost:3000',
       'http://192.168.3.11',
-      'ru.dealive.mobile', // Для мобильных приложений на эмуляторах
+      'ru.dealive.mobile',
+      'https://dealive.ru',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Разрешённые HTTP методы
     credentials: true, // Если требуется передача cookies или авторизационных данных
