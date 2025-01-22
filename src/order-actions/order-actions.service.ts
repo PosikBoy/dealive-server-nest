@@ -32,6 +32,7 @@ export class OrderActionService {
     // Если это первое действие, пропустить проверку
     if (currentStatus.sequence === 1) {
       currentStatus.isCompleted = true;
+      currentStatus.completedAt = new Date();
       await currentStatus.save();
       return;
     }
@@ -46,10 +47,13 @@ export class OrderActionService {
     }
 
     currentStatus.isCompleted = true;
+    currentStatus.completedAt = new Date();
+
     if (currentStatus.actionType === OrderActionType.COMPLETE_ORDER) {
       order.statusId = OrderStatusEnum.DELIVERED;
       await order.save();
     }
+
     await currentStatus.save();
   }
 
