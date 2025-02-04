@@ -20,11 +20,14 @@ export class FilesService {
     @Inject(FILES_REPOSITORY) private filesRepository: typeof Files,
   ) {}
 
+  // Сохранение фотографий документов
   async saveDocuments(images: Express.Multer.File[]): Promise<string> {
     try {
       const directoryName = uuid.v4();
       const directoryPath = path.resolve(
         __dirname,
+        '..',
+        '..',
         '..',
         'documents',
         directoryName,
@@ -32,12 +35,14 @@ export class FilesService {
       if (!fs.existsSync(directoryPath)) {
         fs.mkdirSync(directoryPath, { recursive: true });
       }
+
       images.forEach((image, index) => {
         fs.writeFileSync(
           path.join(directoryPath, `${index}.jpg`),
           image.buffer,
         );
       });
+
       return directoryName;
     } catch (error) {
       console.log(error);
