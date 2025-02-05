@@ -94,10 +94,9 @@ export class OrderActionService {
 
         await this.orderActionsRepository.create({
           actionType: OrderActionType.COLLECT_PAYMENT,
-          description: `Получил оплату в размере ${order.price} ₽  `,
+          description: `Получил оплату в размере ${order.price.toFixed(2)}₽`,
           orderId: order.id,
           addressId: address.id,
-
           sequence,
         });
         sequence += 1;
@@ -115,7 +114,7 @@ export class OrderActionService {
 
     await this.orderActionsRepository.create({
       actionType: OrderActionType.PAY_COMMISION,
-      description: `Оплатил комиссию ${order.price * 0.15}`,
+      description: `Оплатил комиссию ${(order.price * 0.15).toFixed(2)}₽`,
       orderId: order.id,
       sequence,
     });
