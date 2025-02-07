@@ -1,7 +1,7 @@
 import { Address } from '@/addresses/addresses.model';
 import { OrderAction } from '@/order-actions/order-actions.model';
 
-export class IOrderWithGeo {
+export class OrderWithGeoDto {
   id: number;
   clientId?: number;
   date: Date;
@@ -66,7 +66,7 @@ export class OrderWithoutSensitiveInfoDto {
   statusId: number;
   addresses: AddressWithoutSensitiveInfo[];
   actions: OrderAction[];
-  constructor(order: IOrderWithGeo) {
+  constructor(order: OrderWithGeoDto) {
     this.id = order.id;
     this.date = order.date;
     this.parcelType = order.parcelType;

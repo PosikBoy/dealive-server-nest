@@ -13,6 +13,7 @@ import { Messages } from '@/constants/messages';
 import { Op } from 'sequelize';
 import {
   AddressWithGeoData,
+  OrderWithGeoDto,
   OrderWithoutSensitiveInfoDto,
 } from './dtos/order.dto';
 
@@ -235,7 +236,7 @@ export class OrdersService {
         ...order.dataValues,
         addresses: addressesWithGeodata,
       };
-      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
+      return orderWithGeo;
     });
     return Promise.all(ordersWithGeo);
   }
