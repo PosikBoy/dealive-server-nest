@@ -164,13 +164,22 @@ export class OrdersService {
       attributes: {
         exclude: ['clientId', 'phoneNumber', 'phoneName', 'updatedAt'],
       },
-      include: {
-        model: Address,
-        attributes: {
-          exclude: ['phoneNumber', 'floor', 'apartment', 'updatedAt'],
+      include: [
+        {
+          model: Address,
+          attributes: {
+            exclude: ['phoneNumber', 'floor', 'apartment', 'updatedAt'],
+          },
         },
-      },
+        {
+          model: OrderAction,
+          attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+          },
+        },
+      ],
     });
+
     const ordersWithGeo = orders.map(async (order) => {
       const addressesGeodata = await this.geodataService.getAddresses(
         order.addresses,

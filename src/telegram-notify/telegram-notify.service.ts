@@ -16,7 +16,6 @@ export class TelegramNotifyService {
   });
 
   newOrder(order: Order) {
-    console.log(this.TELEGRAM_BOT_TOKEN);
     try {
       this.bot.sendMessage(
         this.TELEGRAM_CHAT_ID,
