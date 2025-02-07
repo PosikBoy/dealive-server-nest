@@ -209,9 +209,17 @@ export class OrdersService {
           { statusId: OrderStatusEnum.COURIER_IN_TRANSIT },
         ],
       },
-      include: {
-        model: Address,
-      },
+      include: [
+        {
+          model: Address,
+        },
+        {
+          model: OrderAction,
+          attributes: {
+            exclude: ['createdAt', 'updatedAt'],
+          },
+        },
+      ],
     });
 
     const ordersWithGeo = orders.map(async (order) => {
