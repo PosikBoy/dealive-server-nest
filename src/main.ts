@@ -25,6 +25,7 @@ async function start() {
       'http://localhost:3000',
       'http://192.168.3.11',
       'ru.dealive.mobile',
+      'http://localhost:8081',
       'https://dealive.ru',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Разрешённые HTTP методы

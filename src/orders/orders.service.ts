@@ -199,7 +199,6 @@ export class OrdersService {
     return Promise.all(ordersWithGeo);
   }
 
-  //Курьер получает все активные заказы
   async getActiveOrders(courier: JwtUser) {
     const courierId = courier.id;
 
