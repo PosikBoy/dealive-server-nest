@@ -13,7 +13,8 @@ services:
     networks:
       - backend
     depends_on:
-      - mysql
+      mysql: 
+        condition: service_healthy
       - redis
       - geodata
   redis:
