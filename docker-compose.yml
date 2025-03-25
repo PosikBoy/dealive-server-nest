@@ -52,6 +52,7 @@ services:
 volumes:
   db_data:
   app_data:
+  redis_data:
 
 networks:
   backend:
