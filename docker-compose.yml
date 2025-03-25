@@ -10,7 +10,7 @@ services:
       - "5000:5000"
     restart: always
     volumes:
-      - app_data:/documents
+      - ../documents:/documents
     networks:
       - backend
     depends_on:
@@ -39,14 +39,15 @@ services:
   mysql:
     container_name: mysql
     image: mysql:8.0
-    ports:
+    ports:      
       - 3306:3306
-    environment:
-      MYSQL_DATABASE: geodata
     env_file:
-      - .production.env
+      - ./.production.env
+    environment:
+      - MYSQL_DATABASE:geodata
     volumes:
-      - /var/lib/mysql:/var/lib/mysql
+      - ../init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
@@ -78,3 +79,4 @@ volumes:
 
 networks:
   backend:
+    driver: bridge
