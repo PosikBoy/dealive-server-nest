@@ -1,4 +1,5 @@
-# version: '3.8'
+version: '3.8'
+
 services:
   backend:
     container_name: backend
@@ -13,11 +14,13 @@ services:
     networks:
       - backend
     depends_on:
-      mysql: 
+      mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
-      - geodata
+      geodata:
+        condition: service_started
+
   redis:
     image: redis:alpine
     container_name: redis
@@ -27,22 +30,31 @@ services:
       - redis_data:/data
     networks:
       - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   mysql:
     container_name: mysql
-    image: mysql
+    image: mysql:latest
     ports:
       - 3306:3306
     env_file:
       - .production.env
     volumes:
       - db_data:/var/lib/mysql
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD || exit 1"]
       interval: 5s
       timeout: 10s
       retries: 10
     networks:
       - backend
+
   geodata:
     container_name: geodata
     build: ../dealive-geodata/
@@ -51,8 +63,10 @@ services:
     env_file:
       - ../dealive-geodata/.env
     depends_on:
-      - redis
-      - mysql
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - backend
 
