@@ -11,6 +11,6 @@ ENV SERVER_URL http://localhost:5000
 
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 5000
 
 CMD ["npm", "run", "start"]
