@@ -34,7 +34,7 @@ services:
     env_file:
       - .production.env
     volumes:
-      - db_data:/var/lib/mysql
+      - /var/lib/mysql:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
