@@ -46,7 +46,7 @@ services:
     env_file:
       - .production.env
     volumes:
-      - /db_data:/var/lib/mysql
+      - /var/lib/mysql:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
