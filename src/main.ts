@@ -16,7 +16,6 @@ async function start() {
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  console.log(process.env)
   SwaggerModule.setup('/docs', app, document);
 
   app.use(cookieParser());
