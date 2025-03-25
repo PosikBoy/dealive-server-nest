@@ -5,12 +5,13 @@ services:
     container_name: backend
     build: ./
     env_file:
-      - ./.production.env
+      - .production.env
     ports:
       - "5000:5000"
     restart: always
     volumes:
       - app_data:/documents
+      - ./.production.env:/app/.production.env
     networks:
       - backend
     depends_on:
@@ -42,7 +43,7 @@ services:
     ports:
       - 3306:3306
     env_file:
-      - ./.production.env
+      - .production.env
     volumes:
       - /var/lib/mysql:/var/lib/mysql
     restart: unless-stopped

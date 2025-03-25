@@ -7,8 +7,6 @@ RUN npm ci
 
 COPY . .
 
-ENV SERVER_URL http://localhost:5000
-
 RUN npm run build
 
 EXPOSE 5000
