@@ -5,7 +5,7 @@ services:
     container_name: backend
     build: ./
     env_file:
-      - .development.env
+      - .production.env
     restart: always
     volumes:
       - app_data:/documents
@@ -41,6 +41,8 @@ services:
   geodata: 
     container_name: geodata
     build: ../dealive-geodata
+    env_file:
+      - ../dealive-geodata/.env
     depends_on:
       - redis
       - mysql
