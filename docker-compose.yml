@@ -15,8 +15,10 @@ services:
     depends_on:
       mysql: 
         condition: service_healthy
-      - redis
-      - geodata
+      redis:
+        condition: service_healthy
+      geodata:
+        condition: service_healthy
   redis:
     image: redis:alpine
     container_name: redis
@@ -36,7 +38,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
       interval: 5s
       timeout: 10s
       retries: 10
