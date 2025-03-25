@@ -40,7 +40,9 @@ services:
     container_name: mysql
     image: mysql:8.0
     ports:
-      - 3306:3306
+      - 3306:3306э
+    environment:
+      MYSQL_DATABASE: geodata
     env_file:
       - .production.env
     volumes:
