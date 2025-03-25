@@ -48,6 +48,8 @@ services:
       - mysql
     env_file:
       - .env
+    networks:
+      - backend
 
 volumes:
   db_data:
