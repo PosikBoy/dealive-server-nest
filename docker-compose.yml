@@ -46,8 +46,6 @@ services:
     depends_on:
       - redis
       - mysql
-    env_file:
-      - .env
     networks:
       - backend
 
