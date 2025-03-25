@@ -40,7 +40,7 @@ services:
       - backend
   geodata: 
     container_name: geodata
-    build: ../dealive-geodata
+    build: ../dealive-geodata/
     env_file:
       - ../dealive-geodata/.env
     depends_on:
