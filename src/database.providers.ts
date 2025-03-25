@@ -36,7 +36,12 @@ export const databaseProviders = [
         OrderAction,
         Files,
       ]);
+      try {
       await sequelize.sync();
+        
+      } catch (error) {
+        console.log(error)
+      }
       return sequelize;
     },
   },
