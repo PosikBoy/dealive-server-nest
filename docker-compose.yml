@@ -6,6 +6,8 @@ services:
     build: ./
     env_file:
       - .production.env
+    ports:
+      - "5000:5000"
     restart: always
     volumes:
       - app_data:/documents
@@ -41,6 +43,8 @@ services:
   geodata: 
     container_name: geodata
     build: ../dealive-geodata/
+    ports:
+      - "5001:5001"
     env_file:
       - ../dealive-geodata/.env
     depends_on:
