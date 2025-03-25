@@ -17,8 +17,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      geodata:
-        condition: service_healthy
+      - geodata
   redis:
     image: redis:alpine
     container_name: redis
