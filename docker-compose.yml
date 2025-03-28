@@ -40,7 +40,7 @@ services:
     container_name: mysql
     image: mysql:8.0
     ports:      
-      - 3306:3306
+      - "127.0.0.1:3306:3306"
     env_file:
       - ./.production.env
     environment:
@@ -79,4 +79,4 @@ volumes:
 
 networks:
   backend:
-    internal: true
+   driver: bridge 
