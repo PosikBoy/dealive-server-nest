@@ -1,3 +1,5 @@
+import { Messages as ServerMessages } from '@/common/constants/error-messages';
+import { JwtGuard } from '@/common/guards/auth.guard';
 import {
   Body,
   Controller,
@@ -8,12 +10,10 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { MessagesService } from './messages.service';
-import { JwtGuard } from '@/auth/auth.guards';
 import { Request } from 'express';
-import { SendMessageDto } from './dtos/send-message-dto';
 import { GetMessagesDto, PollMessagesDto } from './dtos/get-messages-dto';
-import { Messages as ServerMessages } from '@/constants/messages';
+import { SendMessageDto } from './dtos/send-message-dto';
+import { MessagesService } from './messages.service';
 
 @UseGuards(JwtGuard)
 @Controller('messages')

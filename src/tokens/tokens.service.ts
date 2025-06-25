@@ -1,8 +1,8 @@
-import { Messages } from '@/constants/messages';
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
-} from '@/constants/auth';
+} from '@/common/constants/auth';
+import { Messages } from '@/common/constants/error-messages';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 

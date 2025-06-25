@@ -1,21 +1,21 @@
+import { Messages } from '@/common/constants/error-messages';
+import { JwtGuard } from '@/common/guards/auth.guard';
 import {
-  Controller,
-  Post,
-  UseInterceptors,
-  UploadedFiles,
   BadRequestException,
-  UseGuards,
+  Controller,
   Get,
   Param,
-  Res,
+  Post,
   Req,
+  Res,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { InternalServerErrorException } from '@nestjs/common/exceptions';
-import { Messages } from '@/constants/messages';
-import { FilesService } from './files.service';
-import { JwtGuard } from '@/auth/auth.guards';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
+import { FilesService } from './files.service';
 
 @UseGuards(JwtGuard)
 @Controller('files')

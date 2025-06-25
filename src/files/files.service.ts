@@ -1,3 +1,6 @@
+import { Messages } from '@/common/constants/error-messages';
+import { FILES_REPOSITORY } from '@/common/constants/sequelize';
+import { JwtUser } from '@/common/types/jwt';
 import {
   BadRequestException,
   ForbiddenException,
@@ -6,12 +9,9 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
 import * as uuid from 'uuid';
-import { Messages } from '@/constants/messages';
-import { JwtUser } from '@/types/jwt';
-import { FILES_REPOSITORY } from '@/constants/sequelize';
 import { Files } from './files.model';
 
 @Injectable()

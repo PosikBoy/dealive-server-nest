@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { OrderStatus } from './order-statuses.model';
 import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
+
 const sequelize = new Sequelize({
   dialect: 'mysql',
   host: 'localhost',

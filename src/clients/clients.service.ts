@@ -1,17 +1,12 @@
+import { Messages } from '@/common/constants/error-messages';
+import { CLIENTS_REPOSITORY } from '@/common/constants/sequelize';
+import { UserWithoutSensitiveInfoDto } from '@/users/dtos/user-without-sensitive-info.dto';
+import { UserRolesEnum } from '@/users/user.model';
+import { UserService } from '@/users/user.service';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { ClientWithoutSensitiveInfo } from './../auth/dtos/client-without-sensitive-info';
-import {
-  ConflictException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { CLIENTS_REPOSITORY } from '@/constants/sequelize';
 import { Client } from './clients.model';
 import { ClientEditInfoDto } from './dtos/clients.dto';
-import { Messages } from '@/constants/messages';
-import { UserService } from '@/users/user.service';
-import { UserRolesEnum } from '@/users/user.model';
-import { UserWithoutSensitiveInfoDto } from '@/users/dtos/user-without-sensitive-info.dto';
 
 @Injectable()
 export class ClientsService {

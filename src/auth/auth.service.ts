@@ -1,26 +1,26 @@
 import { ClientsService } from '@/clients/clients.service';
+import { PASSWORD_SALT } from '@/common/constants/auth';
+import { Messages } from '@/common/constants/error-messages';
+import { JwtUser } from '@/common/types/jwt';
+import { CouriersService } from '@/couriers/couriers.service';
+import { FilesService } from '@/files/files.service';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
+import { TokensService } from '@/tokens/tokens.service';
+import { UserRolesEnum } from '@/users/user.model';
+import { UserService } from '@/users/user.service';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import {
   ClientAuthDto,
-  CourierRegisterDto,
   CourierLoginDto,
+  CourierRegisterDto,
   ExistCandidateDto,
 } from './dtos/auth.dto';
-import * as bcrypt from 'bcrypt';
-import { TokensService } from '@/tokens/tokens.service';
-import { CouriersService } from '@/couriers/couriers.service';
-import { FilesService } from '@/files/files.service';
-import { Messages } from '@/constants/messages';
-import { PASSWORD_SALT } from '@/constants/auth';
-import { JwtUser } from '@/types/jwt';
-import { UserService } from '@/users/user.service';
-import { UserRolesEnum } from '@/users/user.model';
-import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 
 @Injectable()
 export class AuthService {

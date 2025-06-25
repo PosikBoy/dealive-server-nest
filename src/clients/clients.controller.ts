@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
-import { ClientsService } from './clients.service';
-import { RolesGuard } from '@/auth/auth.guards';
-import { Request } from 'express';
-import { ClientDto, ClientEditInfoDto } from './dtos/clients.dto';
 import { Roles } from '@/auth/decorators/roles-auth.decorator';
+import { RolesGuard } from '@/common/guards/auth.guard';
+import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
+import { ClientsService } from './clients.service';
+import { ClientDto, ClientEditInfoDto } from './dtos/clients.dto';
 
-import { ApiResponses } from '@/constants/swaggerResponses';
-import { UserService } from '@/users/user.service';
+import { ApiResponses } from '@/common/constants/swaggerResponses';
 import { UserRolesEnum } from '@/users/user.model';
+import { UserService } from '@/users/user.service';
 
 @ApiTags('Работа с клиентами')
 @Roles('client')

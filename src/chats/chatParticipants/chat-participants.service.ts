@@ -1,7 +1,7 @@
-import { CHATS_PARTICIPANTS_REPOSITORY } from '@/constants/sequelize';
+import { CHATS_PARTICIPANTS_REPOSITORY } from '@/common/constants/sequelize';
 import { Inject, Injectable } from '@nestjs/common';
-import { ChatParticipants } from './chat-participants.model';
 import { Op } from 'sequelize';
+import { ChatParticipants } from './chat-participants.model';
 
 @Injectable()
 export class ChatParticipantsService {

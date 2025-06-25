@@ -1,17 +1,11 @@
-import { MESSAGES_REPOSITORY } from '@/constants/sequelize';
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { Messages } from './messages.model';
-import { SendMessageDto } from './dtos/send-message-dto';
-import { JwtUser } from '@/types/jwt';
-import { ChatParticipantsService } from '../chatParticipants/chat-participants.service';
-import { Messages as ServerMessages } from '@/constants/messages';
+import { Messages as ServerMessages } from '@/common/constants/error-messages';
+import { MESSAGES_REPOSITORY } from '@/common/constants/sequelize';
+import { JwtUser } from '@/common/types/jwt';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter } from 'events';
-import { NotFoundError } from 'rxjs';
+import { ChatParticipantsService } from '../chatParticipants/chat-participants.service';
+import { SendMessageDto } from './dtos/send-message-dto';
+import { Messages } from './messages.model';
 
 @Injectable()
 export class MessagesService {

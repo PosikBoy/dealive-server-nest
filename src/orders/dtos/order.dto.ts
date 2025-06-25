@@ -1,4 +1,5 @@
 import { Address } from '@/addresses/addresses.model';
+import { Geodata } from '@/geodata/types/geodata-response';
 import { OrderAction } from '@/order-actions/order-actions.model';
 
 export class OrderWithGeoDto {
@@ -27,9 +28,9 @@ export class AddressWithGeoData {
   phoneNumber: string;
   phoneName: string;
   info: string;
-  geoData: any;
+  geoData: Geodata;
 
-  constructor(address: Address, geoData) {
+  constructor(address: Address, geoData: Geodata) {
     this.id = address.id;
     this.orderId = address.orderId;
     this.address = address.address;
@@ -39,21 +40,6 @@ export class AddressWithGeoData {
     this.phoneName = address.phoneName;
     this.info = address.info;
     this.geoData = geoData;
-  }
-}
-
-class AddressWithoutSensitiveInfo {
-  id: number;
-  orderId: number;
-  address: string;
-  info: string;
-  geoData: any;
-  constructor(address: AddressWithGeoData) {
-    this.id = address.id;
-    this.orderId = address.orderId;
-    this.address = address.address;
-    this.info = address.info.replace(/\d/g, '*');
-    this.geoData = address.geoData;
   }
 }
 
@@ -77,5 +63,20 @@ export class OrderWithoutSensitiveInfoDto {
     this.addresses = order.addresses.map((address) => {
       return new AddressWithoutSensitiveInfo(address);
     });
+  }
+}
+
+class AddressWithoutSensitiveInfo {
+  id: number;
+  orderId: number;
+  address: string;
+  info: string;
+  geoData: any;
+  constructor(address: AddressWithGeoData) {
+    this.id = address.id;
+    this.orderId = address.orderId;
+    this.address = address.address;
+    this.info = address.info.replace(/\d/g, '*');
+    this.geoData = address.geoData;
   }
 }

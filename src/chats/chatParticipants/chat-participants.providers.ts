@@ -1,4 +1,4 @@
-import { CHATS_PARTICIPANTS_REPOSITORY } from '@/constants/sequelize';
+import { CHATS_PARTICIPANTS_REPOSITORY } from '@/common/constants/sequelize';
 import { ChatParticipants } from './chat-participants.model';
 
 export const chatParticipantsProviders = [

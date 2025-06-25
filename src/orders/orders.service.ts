@@ -1,36 +1,32 @@
-import { ADDRESS_REPOSITORY, ORDERS_REPOSITORY } from '@/constants/sequelize';
+import { Address } from '@/addresses/addresses.model';
+import { ClientsService } from '@/clients/clients.service';
+import { Messages } from '@/common/constants/error-messages';
+import {
+  ADDRESS_REPOSITORY,
+  ORDERS_REPOSITORY,
+} from '@/common/constants/sequelize';
+import { JwtUser } from '@/common/types/jwt';
+import { Courier } from '@/couriers/couriers.model';
+import { GeodataService } from '@/geodata/geodata.service';
+import { OrderAction } from '@/order-actions/order-actions.model';
+import { OrderActionService } from '@/order-actions/order-actions.service';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
+import { User, UserRolesEnum } from '@/users/user.model';
+import { UserService } from '@/users/user.service';
 import {
   BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Order } from './orders.model';
-import { Address } from '@/addresses/addresses.model';
-import { CreateOrderDto } from './dtos/create-order.dto';
-import { JwtUser } from '@/types/jwt';
-import { Messages } from '@/constants/messages';
 import { Op } from 'sequelize';
+import { CreateOrderDto } from './dtos/create-order.dto';
 import {
   AddressWithGeoData,
-  OrderWithGeoDto,
   OrderWithoutSensitiveInfoDto,
 } from './dtos/order.dto';
-
+import { Order } from './orders.model';
 import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
-import { User, UserRolesEnum } from '@/users/user.model';
-import { Courier } from '@/couriers/couriers.model';
-import { OrderAction } from '@/order-actions/order-actions.model';
-
-import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
-import { GeodataService } from '@/geodata/geodata.service';
-import { OrderActionService } from '@/order-actions/order-actions.service';
-import { UserService } from '@/users/user.service';
-import { ClientsService } from '@/clients/clients.service';
-
-interface CourierWithPhone extends Courier {
-  phoneNumber?: string;
-}
 
 @Injectable()
 export class OrdersService {
@@ -50,45 +46,33 @@ export class OrdersService {
     const { id } = user;
     let orders: Order[];
 
-    if (user.role === 'client') {
-      orders = await this.ordersRepository.findAll({
-        where: { clientId: id },
-        include: {
-          model: Address,
-        },
-      });
-    } else if (user.role === 'courier') {
-      orders = await this.ordersRepository.findAll({
-        where: { courierId: id },
-        attributes: {
-          exclude: ['clientId', 'phoneNumber', 'phoneName', 'updatedAt'],
-        },
-        include: {
-          model: Address,
-          attributes: {
-            exclude: ['phoneNumber', 'floor', 'apartment', 'updatedAt'],
+    switch (user.role) {
+      case 'client':
+        orders = await this.ordersRepository.findAll({
+          where: { clientId: id },
+          include: {
+            model: Address,
           },
-        },
-      });
-    }
-
-    if (user.role == 'courier') {
-      const ordersWithGeo = orders.map(async (order) => {
-        const addressesGeodata = await this.geodataService.getAddresses(
-          order.addresses,
-        );
-
-        const addressesWithGeodata = order.addresses.map((address, index) => {
-          return new AddressWithGeoData(address, addressesGeodata[index]);
         });
-
-        const orderWithGeo = {
-          ...order.dataValues,
-          addresses: addressesWithGeodata,
-        };
-        return new OrderWithoutSensitiveInfoDto(orderWithGeo);
-      });
-      return Promise.all(ordersWithGeo);
+        break;
+      case 'courier':
+        orders = await this.ordersRepository.findAll({
+          where: { courierId: id },
+          attributes: {
+            exclude: ['clientId', 'phoneNumber', 'phoneName', 'updatedAt'],
+          },
+          include: {
+            model: Address,
+            attributes: {
+              exclude: ['phoneNumber', 'floor', 'apartment', 'updatedAt'],
+            },
+          },
+        });
+        const ordersWithGeo = await this.enrichOrdersWithGeodata(orders);
+        const ordersWithoutSensitiveInfo = ordersWithGeo.map((order) => {
+          return new OrderWithoutSensitiveInfoDto(order);
+        });
+        return ordersWithoutSensitiveInfo;
     }
     if (!orders) {
       throw new NotFoundException(Messages.ORDERS_NOT_FOUND);
@@ -101,6 +85,7 @@ export class OrdersService {
     id: number,
     user: JwtUser,
   ): Promise<Order | OrderWithoutSensitiveInfoDto> {
+    //Получение заказа из БД
     const order = await this.ordersRepository.findByPk(id, {
       include: [
         {
@@ -116,44 +101,44 @@ export class OrdersService {
       ],
     });
 
+    //Нет заказа - ошибка
     if (!order) {
       throw new NotFoundException(Messages.ORDER_NOT_FOUND);
     }
 
-    const addressesGeodata = await this.geodataService.getAddresses(
-      order.addresses,
-    );
+    switch (user.role) {
+      //Для клиента
+      case 'client': {
+        if (order.clientId !== user.id) {
+          throw new NotFoundException(Messages.ORDER_NOT_FOUND);
+        }
+        return order;
+      }
+      //Для курьера
+      case 'courier': {
+        //Если заказ не принадлежит курьеру
+        if (order.courierId !== user.id) {
+          //Если статус заказа в поиске курьера - возвращаем заказ с геоданными
+          if (order.statusId == OrderStatusEnum.SEARCH_COURIER) {
+            const enrichedOrder = await this.enrichOrderWithGeodata(order);
 
-    const addressesWithGeodata = order.addresses.map((address, index) => {
-      return new AddressWithGeoData(address, addressesGeodata[index]);
-    });
+            return new OrderWithoutSensitiveInfoDto(enrichedOrder);
+          }
 
-    const orderWithGeo = {
-      ...order.dataValues,
-      addresses: addressesWithGeodata,
-    };
+          throw new NotFoundException(Messages.ORDER_NOT_FOUND);
+        }
+        const enrichedOrder = await this.enrichOrderWithGeodata(order);
 
-    if (user.role === 'client' && order.clientId !== user.id) {
-      throw new NotFoundException(Messages.ORDER_NOT_FOUND);
-    }
+        if (order.statusId == OrderStatusEnum.COURIER_IN_TRANSIT) {
+          return enrichedOrder;
+        }
 
-    if (user.role === 'courier' && order.courierId !== user.id) {
-      if (order.statusId != OrderStatusEnum.SEARCH_COURIER) {
-        throw new NotFoundException(Messages.ORDER_NOT_FOUND);
+        return new OrderWithoutSensitiveInfoDto(enrichedOrder);
       }
 
-      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
+      default:
+        return order;
     }
-
-    if (
-      user.role === 'courier' &&
-      order.courierId === user.id &&
-      order.statusId != OrderStatusEnum.COURIER_IN_TRANSIT
-    ) {
-      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
-    }
-
-    return orderWithGeo;
   }
 
   //Курьер получает все доступные заказы без чувствительной информации
@@ -181,22 +166,13 @@ export class OrdersService {
       ],
     });
 
-    const ordersWithGeo = orders.map(async (order) => {
-      const addressesGeodata = await this.geodataService.getAddresses(
-        order.addresses,
-      );
+    const enrichedOrders = await this.enrichOrdersWithGeodata(orders);
 
-      const addressesWithGeodata = order.addresses.map((address, index) => {
-        return new AddressWithGeoData(address, addressesGeodata[index]);
-      });
-
-      const orderWithGeo = {
-        ...order.dataValues,
-        addresses: addressesWithGeodata,
-      };
-      return new OrderWithoutSensitiveInfoDto(orderWithGeo);
+    const ordersWithoutSensitiveInfo = enrichedOrders.map((order) => {
+      return new OrderWithoutSensitiveInfoDto(order);
     });
-    return Promise.all(ordersWithGeo);
+
+    return ordersWithoutSensitiveInfo;
   }
 
   async getActiveOrders(courier: JwtUser) {
@@ -222,54 +198,16 @@ export class OrdersService {
       ],
     });
 
-    const ordersWithGeo = orders.map(async (order) => {
-      const addressesGeodata = await this.geodataService.getAddresses(
-        order.addresses,
-      );
-
-      const addressesWithGeodata = order.addresses.map((address, index) => {
-        return new AddressWithGeoData(address, addressesGeodata[index]);
-      });
-
-      const orderWithGeo = {
-        ...order.dataValues,
-        addresses: addressesWithGeodata,
-      };
-      return orderWithGeo;
-    });
-    return Promise.all(ordersWithGeo);
+    return await this.enrichOrdersWithGeodata(orders);
   }
 
   //Клиент создает заказ
   async createOrder(createOrderDto: CreateOrderDto, user: JwtUser) {
     const { parcelType, weight, price, addresses } = createOrderDto;
-    // Проверка входных данных
-
-    if (
-      !parcelType ||
-      !weight ||
-      !price ||
-      !addresses ||
-      addresses.length < 2
-    ) {
-      throw new BadRequestException(Messages.ORDER_CREATE_ERROR);
-    }
-
-    // Проверка адресов на наличие обязательных данных
-    const invalidAddress = addresses.some((address) => {
-      return !address.address || !address.phoneNumber;
-    });
-
-    if (invalidAddress) {
-      throw new BadRequestException(Messages.ORDER_CREATE_ERROR);
-    }
-
-    // Инициализация данных для заказа
     let clientId = null;
     let phoneNumber = null;
     let phoneName = null;
 
-    // Если пользователь авторизован, получаем данные клиента
     if (user) {
       const userDB = await this.userService.findUser(
         'id',
@@ -282,8 +220,10 @@ export class OrdersService {
       if ('phoneNumber' in userDB) phoneNumber = userDB.phoneNumber || '';
       phoneName = client.name;
     }
+
     const trackNumber =
       'MSK' + Math.random().toString(36).substring(2, 13).toUpperCase();
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     // Создание заказа
     const order = await this.ordersRepository.create({
@@ -298,21 +238,27 @@ export class OrdersService {
     });
     // Создание адресов, связанных с заказом
 
-    const addressPromises = addresses.map((address) =>
-      this.addressRepository.create({
+    const createdAddresses = [];
+    for (const address of addresses) {
+      const created = await this.addressRepository.create({
         ...address,
         orderId: order.id,
-      }),
-    );
-    const createdAddresses = await Promise.all(addressPromises);
+      });
+      createdAddresses.push(created);
+    }
 
     const orderFromDb = await this.ordersRepository.findByPk(order.id, {
       include: {
         model: Address,
       },
     });
+
     const actions = await this.orderActionsService.generate(orderFromDb);
-    this.telegramNotifyService.newOrder(orderFromDb);
+    try {
+      this.telegramNotifyService.newOrder(orderFromDb);
+    } catch (e) {
+      console.error('Ошибка уведомления Telegram:', e);
+    }
     // Возвращаем созданный заказ с адресами
     return { ...order.dataValues, addresses: createdAddresses, actions };
   }
@@ -321,9 +267,11 @@ export class OrdersService {
     const courierId = courier.id;
 
     const order = await this.ordersRepository.findByPk(orderId);
+
     if (order.statusId != OrderStatusEnum.SEARCH_COURIER) {
       throw new BadRequestException(Messages.ORDER_TAKE_ERROR);
     }
+
     order.courierId = courierId;
     order.statusId = OrderStatusEnum.COURIER_IN_TRANSIT;
 
@@ -381,5 +329,29 @@ export class OrdersService {
     };
 
     return orderData;
+  }
+
+  async enrichOrderWithGeodata(order: Order) {
+    const addressesGeodata = await this.geodataService.getAddresses(
+      order.addresses,
+    );
+
+    const addressesWithGeodata = order.addresses.map((address, index) => {
+      return new AddressWithGeoData(address, addressesGeodata[index]);
+    });
+
+    const orderWithGeo = {
+      ...order.dataValues,
+      addresses: addressesWithGeodata,
+    };
+
+    return orderWithGeo;
+  }
+
+  async enrichOrdersWithGeodata(orders: Order[]) {
+    const ordersWithGeo = orders.map(async (order) => {
+      return this.enrichOrderWithGeodata(order);
+    });
+    return Promise.all(ordersWithGeo);
   }
 }

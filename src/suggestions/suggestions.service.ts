@@ -1,4 +1,4 @@
-import { Urls } from '@/constants/urls';
+import { Urls } from '@/common/constants/urls';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';

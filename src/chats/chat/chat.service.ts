@@ -1,8 +1,8 @@
-import { CHATS_REPOSITORY } from '@/constants/sequelize';
+import { CHATS_REPOSITORY } from '@/common/constants/sequelize';
+import { JwtUser } from '@/common/types/jwt';
 import { Inject, Injectable } from '@nestjs/common';
-import { Chats } from './chat.model';
-import { JwtUser } from '@/types/jwt';
 import { ChatParticipantsService } from '../chatParticipants/chat-participants.service';
+import { Chats } from './chat.model';
 
 @Injectable()
 export class ChatService {

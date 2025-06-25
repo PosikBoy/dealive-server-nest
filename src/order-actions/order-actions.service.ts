@@ -1,10 +1,10 @@
-import { ORDER_ACTION_REPOSITORY } from '@/constants/sequelize';
+import { Messages } from '@/common/constants/error-messages';
+import { ORDER_ACTION_REPOSITORY } from '@/common/constants/sequelize';
+import { JwtUser } from '@/common/types/jwt';
+import { Order } from '@/orders/orders.model';
+import { OrderStatusEnum } from '@/orders/ordersStatuses/orders.statuses';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OrderAction, OrderActionType } from './order-actions.model';
-import { Messages } from '@/constants/messages';
-import { Order } from '@/orders/orders.model';
-import { JwtUser } from '@/types/jwt';
-import { OrderStatusEnum } from '@/orders/ordersStatuses/orders.statuses';
 
 @Injectable()
 export class OrderActionService {

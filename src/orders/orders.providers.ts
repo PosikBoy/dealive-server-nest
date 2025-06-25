@@ -1,4 +1,4 @@
-import { ORDERS_REPOSITORY } from '@/constants/sequelize';
+import { ORDERS_REPOSITORY } from '@/common/constants/sequelize';
 import { Order } from './orders.model';
 
 export const ordersRepository = [

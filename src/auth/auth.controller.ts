@@ -1,5 +1,8 @@
-import { ApiResponses } from '@/constants/swaggerResponses';
+import { ApiResponses } from '@/common/constants/swaggerResponses';
 
+import { REFRESH_TOKEN, REFRESH_TOKEN_MAX_AGE } from '@/common/constants/auth';
+import { Messages } from '@/common/constants/error-messages';
+import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 import {
   Body,
   Controller,
@@ -11,23 +14,20 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { RolesGuard } from '../common/guards/auth.guard';
 import { AuthService } from './auth.service';
+import { Roles } from './decorators/roles-auth.decorator';
 import {
   ClientAuthDto,
-  CourierRegisterDto,
-  CourierLoginDto,
   ClientResponseDto,
-  RefreshDto,
+  CourierLoginDto,
+  CourierRegisterDto,
   ExistCandidateDto,
+  RefreshDto,
 } from './dtos/auth.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
-import { REFRESH_TOKEN, REFRESH_TOKEN_MAX_AGE } from '@/constants/auth';
-import { Messages } from '@/constants/messages';
-import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { RolesGuard } from './auth.guards';
-import { Roles } from './decorators/roles-auth.decorator';
-import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
 
 @ApiTags('Авторизация клиентов')
 @Controller('client')
@@ -85,8 +85,9 @@ export class ClientAuthController {
     @Body() authDto: ClientAuthDto,
     @Res() res: Response,
   ) {
-    const { client, tokens } =
-      await this.authService.clientRegistration(authDto);
+    const { client, tokens } = await this.authService.clientRegistration(
+      authDto,
+    );
 
     res.cookie(REFRESH_TOKEN, tokens.refreshToken, {
       httpOnly: true,
@@ -212,8 +213,9 @@ export class CourierAuthController {
     @Body() existCandidateDto: ExistCandidateDto,
     @Res() res: Response,
   ) {
-    const exist: boolean =
-      await this.authService.existCourierCandidate(existCandidateDto);
+    const exist: boolean = await this.authService.existCourierCandidate(
+      existCandidateDto,
+    );
 
     return res.send({ message: Messages.USER_NOT_FOUND, exist });
   }

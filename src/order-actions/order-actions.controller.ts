@@ -1,9 +1,9 @@
-import { RolesGuard } from '@/auth/auth.guards';
 import { Roles } from '@/auth/decorators/roles-auth.decorator';
+import { RolesGuard } from '@/common/guards/auth.guard';
 import { Controller, Param, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { OrderActionService } from './order-actions.service';
 import { Request } from 'express';
+import { OrderActionService } from './order-actions.service';
 
 @ApiTags('Работа с действиями заказов')
 @Roles('courier')

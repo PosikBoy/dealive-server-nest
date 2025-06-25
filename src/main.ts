@@ -1,8 +1,9 @@
-import { NestFactory } from '@nestjs/core'
-import { NestExpressApplication } from '@nestjs/platform-express'
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import * as cookieParser from 'cookie-parser'
-import { AppModule } from './app.module'
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
+import { AppModule } from './app.module';
+import { AppValidationPipe } from './common/pipes/validation.pipe';
 
 async function start() {
   const PORT = process.env.PORT || 5000;
@@ -19,6 +20,9 @@ async function start() {
   SwaggerModule.setup('/docs', app, document);
 
   app.use(cookieParser());
+
+  app.useGlobalPipes(new AppValidationPipe());
+
   app.enableCors({
     origin: [
       'http://localhost:3000',

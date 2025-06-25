@@ -1,4 +1,3 @@
-import * as express from 'express';
 import { JwtUser } from './jwt';
 
 // Расширяем интерфейс Request

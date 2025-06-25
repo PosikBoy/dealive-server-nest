@@ -1,10 +1,8 @@
-import { CourierWithoutSensitiveInfo } from './../auth/dtos/courier-without-sensitive-info';
-import { COURIERS_REPOSITORY } from '@/constants/sequelize';
+import { COURIERS_REPOSITORY } from '@/common/constants/sequelize';
 import { Inject, Injectable } from '@nestjs/common';
+import { CourierWithoutSensitiveInfo } from './../auth/dtos/courier-without-sensitive-info';
 import { Courier } from './couriers.model';
 import { CourierCreateDto } from './dtos/create-courier.dto';
-import { UserService } from '@/users/user.service';
-import { User, UserRolesEnum } from '@/users/user.model';
 
 @Injectable()
 export class CouriersService {

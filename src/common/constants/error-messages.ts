@@ -62,3 +62,20 @@ export const Messages = {
 
   FILE_NOT_FOUND: 'Файл не найден',
 };
+
+export const VALIDATION_ERRORS_MESSAGES = {
+  /* Некторректная почта */
+  INVALID_EMAIL: 'Некорректная почта',
+
+  lengthRange: (min: number, max: number) =>
+    `Значение должно содержать от ${min} до ${max} символов`,
+
+  /* Значение должно быть строкой */
+  INVALID_STRING: 'Значение должно быть строкой',
+
+  /* Значение должно быть числом */
+  INVALID_NUMBER: 'Значение должно быть числом ',
+
+  /* Значение должно быть массивом */
+  INVALID_ARRAY: 'Значение должно быть массивом',
+};

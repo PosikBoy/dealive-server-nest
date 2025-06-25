@@ -1,4 +1,4 @@
-import { FILES_REPOSITORY } from '@/constants/sequelize';
+import { FILES_REPOSITORY } from '@/common/constants/sequelize';
 import { Files } from './files.model';
 
 export const filesProviders = [

@@ -1,3 +1,12 @@
+import { Roles } from '@/auth/decorators/roles-auth.decorator';
+import { Messages } from '@/common/constants/error-messages';
+import { swaggerExamples } from '@/common/constants/swaggerExamples';
+import { ApiResponses } from '@/common/constants/swaggerResponses';
+import {
+  JwtGuard,
+  OptionalJwtGuard,
+  RolesGuard,
+} from '@/common/guards/auth.guard';
 import {
   Body,
   Controller,
@@ -9,17 +18,11 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dtos/create-order.dto';
-import { JwtGuard, OptionalJwtGuard, RolesGuard } from '@/auth/auth.guards';
-import { Request } from 'express';
-import { Roles } from '@/auth/decorators/roles-auth.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Messages } from '@/constants/messages';
-import { swaggerExamples } from '@/constants/swaggerExamples';
-import { ApiResponses } from '@/constants/swaggerResponses';
+import { Request } from 'express';
+import { CreateOrderDto } from './dtos/create-order.dto';
 import TakeOrderDto from './dtos/take-order.dto';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { OrdersService } from './orders.service';
 
 @ApiTags('Работа с заказами')
 @Controller('')

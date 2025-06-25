@@ -1,7 +1,7 @@
+import { ACCESS_TOKEN_EXPIRES_IN } from '@/common/constants/auth';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TokensService } from './tokens.service';
-import { ACCESS_TOKEN_EXPIRES_IN } from '@/constants/auth';
 
 @Module({
   providers: [TokensService],

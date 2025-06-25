@@ -1,4 +1,4 @@
-import { JwtGuard } from '@/auth/auth.guards';
+import { JwtGuard } from '@/common/guards/auth.guard';
 import { Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { ChatService } from './chat.service';

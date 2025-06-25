@@ -1,9 +1,9 @@
-import { USER_REPOSITORY } from '@/constants/sequelize';
+import { USER_REPOSITORY } from '@/common/constants/sequelize';
 import { Inject, Injectable } from '@nestjs/common';
-import { User, UserRolesEnum } from './user.model';
-import { UserWithoutSensitiveInfoDto } from './dtos/user-without-sensitive-info.dto';
 import { UserCreateDto } from './dtos/create-user.dto';
 import { EditUserDto } from './dtos/edit-user.dto';
+import { UserWithoutSensitiveInfoDto } from './dtos/user-without-sensitive-info.dto';
+import { User, UserRolesEnum } from './user.model';
 
 @Injectable()
 export class UserService {

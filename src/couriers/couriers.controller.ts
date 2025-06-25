@@ -1,13 +1,12 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { CouriersService } from './couriers.service';
-import { RolesGuard } from '@/auth/auth.guards';
-import { Request } from 'express';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Roles } from '@/auth/decorators/roles-auth.decorator';
-import { ApiResponses } from '@/constants/swaggerResponses';
-import { UserService } from '@/users/user.service';
+import { ApiResponses } from '@/common/constants/swaggerResponses';
+import { RolesGuard } from '@/common/guards/auth.guard';
 import { UserRolesEnum } from '@/users/user.model';
-import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
+import { UserService } from '@/users/user.service';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
+import { CouriersService } from './couriers.service';
 
 @ApiTags('Работа с курьерами')
 @Roles('courier')

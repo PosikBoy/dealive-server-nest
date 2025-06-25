@@ -1,5 +1,5 @@
 import { ApiResponse } from '@nestjs/swagger';
-import { Messages } from './messages';
+import { Messages } from './error-messages';
 
 export const ApiResponses = {
   Unauthorized: ApiResponse({

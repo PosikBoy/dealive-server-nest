@@ -1,4 +1,4 @@
-import { CLIENTS_REPOSITORY } from '@/constants/sequelize';
+import { CLIENTS_REPOSITORY } from '@/common/constants/sequelize';
 import { Client } from './clients.model';
 
 export const clientsProvider = [
