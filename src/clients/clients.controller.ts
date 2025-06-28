@@ -1,34 +1,34 @@
-import { Roles } from '@/auth/decorators/roles-auth.decorator';
-import { RolesGuard } from '@/common/guards/auth.guard';
-import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
-import { ClientsService } from './clients.service';
-import { ClientDto, ClientEditInfoDto } from './dtos/clients.dto';
+import { Roles } from "@/auth/decorators/roles-auth.decorator";
+import { RolesGuard } from "@/common/guards/auth.guard";
+import { Body, Controller, Get, Put, Req, UseGuards } from "@nestjs/common";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Request } from "express";
+import { ClientsService } from "./clients.service";
+import { ClientDto, ClientEditInfoDto } from "./dtos/clients.dto";
 
-import { ApiResponses } from '@/common/constants/swaggerResponses';
-import { UserRolesEnum } from '@/users/user.model';
-import { UserService } from '@/users/user.service';
+import { ApiResponses } from "@/common/constants/swaggerResponses";
+import { UserRolesEnum } from "@/users/user.model";
+import { UserService } from "@/users/user.service";
 
-@ApiTags('Работа с клиентами')
-@Roles('client')
+@ApiTags("Работа с клиентами")
+@Roles("client")
 @UseGuards(RolesGuard)
-@Controller('client')
+@Controller("client")
 export class ClientsController {
   constructor(
     private clientsService: ClientsService,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
-  @ApiOperation({ summary: 'Получение информации о клиенте' })
+  @ApiOperation({ summary: "Получение информации о клиенте" })
   @ApiResponse({
-    description: 'OK',
+    description: "OK",
     status: 200,
     example: {
       id: 6,
-      email: 'john.doe@example.com',
-      name: '',
-      phoneNumber: '',
+      email: "john.doe@example.com",
+      name: "",
+      phoneNumber: "",
       isConfirmed: false,
     },
   })
@@ -38,37 +38,36 @@ export class ClientsController {
   async getClientInfo(@Req() request: Request) {
     const userId = request.user.id;
     const user = await this.userService.findUser(
-      'id',
+      "id",
       userId,
       UserRolesEnum.CLIENT,
-      false,
+      false
     );
     const client = await this.clientsService.findClient(userId);
     return { ...client, ...user } as ClientDto;
   }
 
-  @ApiOperation({ summary: 'Редактирование информации о клиенте' })
+  @ApiOperation({ summary: "Редактирование информации о клиенте" })
   @ApiResponse({
     example: {
       id: 6,
-      email: 'string',
-      name: 'string',
-      phoneNumber: 'string',
+      email: "string",
+      name: "string",
+      phoneNumber: "string",
       isConfirmed: false,
     },
-    description: 'Редактирование информации о клиенте',
+    description: "Редактирование информации о клиенте",
     status: 200,
   })
   @ApiResponses.Unauthorized
   @ApiResponses.InvalidToken
-  @Put('')
+  @Put("")
   async editClientInfo(
     @Body() body: ClientEditInfoDto,
-    @Req() request: Request,
+    @Req() request: Request
   ) {
     const userId = request.user.id;
     const client = await this.clientsService.editClientInfo(userId, body);
-    console.log(client);
     return client;
   }
 }

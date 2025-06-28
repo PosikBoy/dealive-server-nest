@@ -1,6 +1,6 @@
-import { Client } from '@/clients/clients.model';
-import { Courier } from '@/couriers/couriers.model';
-import { ApiProperty } from '@nestjs/swagger';
+import { Client } from "@/clients/clients.model";
+import { Courier } from "@/couriers/couriers.model";
+import { ApiProperty } from "@nestjs/swagger";
 import {
   Column,
   CreatedAt,
@@ -9,12 +9,12 @@ import {
   Model,
   Table,
   UpdatedAt,
-} from 'sequelize-typescript';
+} from "sequelize-typescript";
 
 export enum UserRolesEnum {
-  COURIER = 'courier',
-  CLIENT = 'client',
-  SUPPORT = 'support',
+  COURIER = "courier",
+  CLIENT = "client",
+  SUPPORT = "support",
 }
 
 export interface UserCreationAttrs {
@@ -24,7 +24,7 @@ export interface UserCreationAttrs {
   role: UserRolesEnum;
 }
 
-@Table({ tableName: 'users' })
+@Table({ tableName: "users" })
 export class User extends Model<User, UserCreationAttrs> {
   @Column({
     primaryKey: true,
@@ -35,31 +35,31 @@ export class User extends Model<User, UserCreationAttrs> {
   id: number;
 
   @ApiProperty({
-    example: 'example@example.com',
-    description: 'Электронная почта',
+    example: "example@example.com",
+    description: "Электронная почта",
   })
   @Column({
-    type: DataType.STRING(60),
+    type: DataType.STRING(255),
     allowNull: false,
     unique: false,
   })
   email: string;
 
   @ApiProperty({
-    example: '+7 (999) 999-99-99',
-    description: 'Номер телефона',
+    example: "+7 (999) 999-99-99",
+    description: "Номер телефона",
   })
   @Column({
     type: DataType.STRING(20),
     unique: false,
-    field: 'phone_number',
+    field: "phone_number",
   })
   phoneNumber: string;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    field: 'hash_pass',
+    field: "hash_pass",
   })
   hashPass: string;
 
@@ -72,14 +72,14 @@ export class User extends Model<User, UserCreationAttrs> {
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    field: 'created_at',
+    field: "created_at",
   })
   createdAt?: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
-    field: 'updated_at',
+    field: "updated_at",
   })
   updatedAt?: Date;
 

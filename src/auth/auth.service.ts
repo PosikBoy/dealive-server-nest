@@ -1,26 +1,28 @@
-import { ClientsService } from '@/clients/clients.service';
-import { PASSWORD_SALT } from '@/common/constants/auth';
-import { Messages } from '@/common/constants/error-messages';
-import { JwtUser } from '@/common/types/jwt';
-import { CouriersService } from '@/couriers/couriers.service';
-import { FilesService } from '@/files/files.service';
-import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
-import { TokensService } from '@/tokens/tokens.service';
-import { UserRolesEnum } from '@/users/user.model';
-import { UserService } from '@/users/user.service';
+import { ClientsService } from "@/clients/clients.service";
+import { PASSWORD_SALT } from "@/common/constants/auth";
+import { Messages } from "@/common/constants/error-messages";
+import { JwtUser } from "@/common/types/jwt";
+import { CouriersService } from "@/couriers/couriers.service";
+import { FilesService } from "@/files/files.service";
+import { TelegramNotifyService } from "@/telegram-notify/telegram-notify.service";
+import { TokensService } from "@/tokens/tokens.service";
+import { UserRolesEnum } from "@/users/user.model";
+import { UserService } from "@/users/user.service";
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+} from "@nestjs/common";
+import * as bcrypt from "bcrypt";
+import { IAuthClientResponse, ITokens } from "./auth.types";
 import {
-  ClientAuthDto,
+  ClientLoginDto,
+  ClientRegisterDto,
   CourierLoginDto,
   CourierRegisterDto,
   ExistCandidateDto,
-} from './dtos/auth.dto';
+} from "./dtos/auth.dto";
 
 @Injectable()
 export class AuthService {
@@ -30,11 +32,11 @@ export class AuthService {
     private courierService: CouriersService,
     private filesService: FilesService,
     private userService: UserService,
-    private telegramNotifyService: TelegramNotifyService,
+    private telegramNotifyService: TelegramNotifyService
   ) {}
 
   async clientRegistration(
-    authDto: ClientAuthDto,
+    authDto: ClientRegisterDto
   ): Promise<IAuthClientResponse> {
     const { email, password } = authDto;
 
@@ -43,9 +45,9 @@ export class AuthService {
     }
 
     const candidate = await this.userService.findUser(
-      'email',
+      "email",
       email,
-      UserRolesEnum.CLIENT,
+      UserRolesEnum.CLIENT
     );
     if (candidate) {
       throw new ConflictException(Messages.USER_ALREADY_EXISTS);
@@ -79,18 +81,18 @@ export class AuthService {
     };
   }
 
-  async clientLogin(authDto: ClientAuthDto): Promise<IAuthClientResponse> {
+  async clientLogin(authDto: ClientLoginDto): Promise<IAuthClientResponse> {
     const { email, password } = authDto;
 
     if (!email || !password) {
       throw new BadRequestException(Messages.FILL_ALL_FIELDS);
     }
 
-    let user = await this.userService.findUser(
-      'email',
+    const user = await this.userService.findUser(
+      "email",
       email,
       UserRolesEnum.CLIENT,
-      true,
+      true
     );
 
     if (!user) {
@@ -98,7 +100,7 @@ export class AuthService {
     }
 
     let isPasswordValid = false;
-    if ('hashPass' in user) {
+    if ("hashPass" in user) {
       isPasswordValid = await bcrypt.compare(password, user.hashPass);
     }
     if (!isPasswordValid) {
@@ -107,7 +109,7 @@ export class AuthService {
 
     const tokens = await this.tokenService.generateTokens({
       id: user.id,
-      role: 'client',
+      role: "client",
     });
 
     const client = await this.clientService.findClient(user.id);
@@ -128,20 +130,20 @@ export class AuthService {
 
   async courierRegistration(
     courierDto: CourierRegisterDto,
-    documentImages: Express.Multer.File[],
+    documentImages: Express.Multer.File[]
   ): Promise<ITokens> {
     const { phoneNumber, password, email } = courierDto;
 
     const candidateByEmail = await this.userService.findUser(
-      'email',
+      "email",
       email,
-      UserRolesEnum.COURIER,
+      UserRolesEnum.COURIER
     );
 
     const candidateByPhone = await this.userService.findUser(
-      'phoneNumber',
+      "phoneNumber",
       phoneNumber,
-      UserRolesEnum.COURIER,
+      UserRolesEnum.COURIER
     );
 
     if (candidateByEmail || candidateByPhone) {
@@ -159,19 +161,21 @@ export class AuthService {
 
     const documentLink = await this.filesService.saveDocuments(documentImages);
     const birthDate = new Date(courierDto.birthDate);
+
     const courier = await this.courierService.createCourier(
       {
         ...courierDto,
         birthDate,
         documentLink,
       },
-      user.id,
+      user.id
     );
 
     const tokens = this.tokenService.generateTokens({
       id: user.id,
       role: UserRolesEnum.COURIER,
     });
+
     this.telegramNotifyService.newCourier(user, courier);
     return tokens;
   }
@@ -180,10 +184,10 @@ export class AuthService {
     const { phoneNumber, password } = loginCourierDto;
 
     const courier = await this.userService.findUser(
-      'phoneNumber',
+      "phoneNumber",
       phoneNumber,
       UserRolesEnum.COURIER,
-      true,
+      true
     );
 
     if (!courier) {
@@ -191,7 +195,7 @@ export class AuthService {
     }
 
     let isPasswordValid;
-    if ('hashPass' in courier) {
+    if ("hashPass" in courier) {
       isPasswordValid = await bcrypt.compare(password, courier.hashPass);
     } else {
       throw new UnauthorizedException(Messages.INVALID_CREDENTIALS);
@@ -203,7 +207,7 @@ export class AuthService {
 
     const tokens = this.tokenService.generateTokens({
       id: courier.id,
-      role: 'courier',
+      role: "courier",
     });
 
     return tokens;
@@ -217,15 +221,15 @@ export class AuthService {
 
   async existCourierCandidate(existCourierDto: ExistCandidateDto) {
     const phoneNumberCandidate = await this.userService.findUser(
-      'phoneNumber',
+      "phoneNumber",
       existCourierDto.phoneNumber,
-      UserRolesEnum.COURIER,
+      UserRolesEnum.COURIER
     );
 
     const emailCandidate = await this.userService.findUser(
-      'email',
+      "email",
       existCourierDto.email,
-      UserRolesEnum.COURIER,
+      UserRolesEnum.COURIER
     );
 
     if (phoneNumberCandidate || emailCandidate) {

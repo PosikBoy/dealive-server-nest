@@ -1,18 +1,18 @@
-import { COURIERS_REPOSITORY } from '@/common/constants/sequelize';
-import { Inject, Injectable } from '@nestjs/common';
-import { CourierWithoutSensitiveInfo } from './../auth/dtos/courier-without-sensitive-info';
-import { Courier } from './couriers.model';
-import { CourierCreateDto } from './dtos/create-courier.dto';
+import { COURIERS_REPOSITORY } from "@/common/constants/sequelize";
+import { Inject, Injectable } from "@nestjs/common";
+import { CourierWithoutSensitiveInfo } from "./../auth/dtos/courier-without-sensitive-info";
+import { Courier } from "./couriers.model";
+import { CourierCreateDto } from "./types/create-courier-input";
 
 @Injectable()
 export class CouriersService {
   constructor(
-    @Inject(COURIERS_REPOSITORY) private courierRepository: typeof Courier,
+    @Inject(COURIERS_REPOSITORY) private courierRepository: typeof Courier
   ) {}
 
   async findCourier(
     userId: number,
-    includeSensitiveInfo: boolean = false,
+    includeSensitiveInfo: boolean = false
   ): Promise<Courier | CourierWithoutSensitiveInfo | null> {
     const courier = await this.courierRepository.findOne({
       where: {
@@ -33,16 +33,18 @@ export class CouriersService {
 
   async createCourier(
     courierDto: CourierCreateDto,
-    userId,
+    userId: number
   ): Promise<CourierWithoutSensitiveInfo> {
     try {
       const courier = await this.courierRepository.create({
         userId,
         ...courierDto,
       });
+
       const courierWithoutSensitiveInfo = new CourierWithoutSensitiveInfo(
-        courier,
+        courier
       );
+
       return courierWithoutSensitiveInfo;
     } catch (error) {
       console.log(error);

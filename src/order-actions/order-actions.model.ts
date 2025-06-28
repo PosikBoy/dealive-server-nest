@@ -1,23 +1,22 @@
-import { Address } from '@/addresses/addresses.model';
-import { Order } from '@/orders/orders.model';
+import { Address } from "@/addresses/addresses.model";
+import { Order } from "@/orders/orders.model";
 import {
-  Table,
+  BelongsTo,
   Column,
-  Model,
   DataType,
   ForeignKey,
-  BelongsTo,
-  Index,
-} from 'sequelize-typescript';
+  Model,
+  Table,
+} from "sequelize-typescript";
 
 export enum OrderActionType {
-  GO_TO = 'GO_TO',
-  ARRIVED_AT = 'ARRIVED_AT',
-  PICKUP = 'PICKUP',
-  DELIVER = 'DELIVER',
-  COLLECT_PAYMENT = 'COLLECT_PAYMENT',
-  PAY_COMMISION = 'PAY_COMMISION',
-  COMPLETE_ORDER = 'COMPLETE_ORDER',
+  GO_TO = "GO_TO",
+  ARRIVED_AT = "ARRIVED_AT",
+  PICKUP = "PICKUP",
+  DELIVER = "DELIVER",
+  COLLECT_PAYMENT = "COLLECT_PAYMENT",
+  PAY_COMMISION = "PAY_COMMISION",
+  COMPLETE_ORDER = "COMPLETE_ORDER",
 }
 
 interface OrderActionCreationAttrs {
@@ -29,10 +28,10 @@ interface OrderActionCreationAttrs {
 }
 
 @Table({
-  tableName: 'order_actions',
+  tableName: "order_actions",
   timestamps: true, // Автоматические createdAt и updatedAt
   indexes: [
-    { fields: ['order_id'] }, // Индекс для быстрого поиска по orderId
+    { fields: ["order_id"] }, // Индекс для быстрого поиска по orderId
     // { fields: ['orderId', 'scheduledAt'] }, // Составной индекс для поиска и сортировки
   ],
 })
@@ -41,7 +40,7 @@ export class OrderAction extends Model<OrderAction, OrderActionCreationAttrs> {
   id: number;
 
   @ForeignKey(() => Order)
-  @Column({ type: DataType.INTEGER, allowNull: false, field: 'order_id' })
+  @Column({ type: DataType.INTEGER, allowNull: false, field: "order_id" })
   orderId: number; // Внешний ключ на таблицу заказов
 
   //Порядковый номер статуса
@@ -49,7 +48,7 @@ export class OrderAction extends Model<OrderAction, OrderActionCreationAttrs> {
   sequence: number;
   @Column({
     type: DataType.ENUM(...Object.values(OrderActionType)),
-    field: 'action_type',
+    field: "action_type",
   })
   actionType: OrderActionType; // Тип действия
 
@@ -57,7 +56,7 @@ export class OrderAction extends Model<OrderAction, OrderActionCreationAttrs> {
   description: string; // Описание действия
 
   @ForeignKey(() => Address)
-  @Column({ type: DataType.INTEGER, allowNull: true, field: 'address_id' })
+  @Column({ type: DataType.INTEGER, allowNull: true, field: "address_id" })
   addressId: number; // Внешний ключ на таблицу адресов
   // @Column({ type: DataType.DATE, allowNull: true })
   // scheduledAt: Date; // Запланированное время выполнения
@@ -65,11 +64,11 @@ export class OrderAction extends Model<OrderAction, OrderActionCreationAttrs> {
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
-    field: 'is_completed',
+    field: "is_completed",
   })
   isCompleted: boolean; // Статус выполнения действия
 
-  @Column({ type: DataType.DATE, allowNull: true, field: 'completed_at' })
+  @Column({ type: DataType.DATE, allowNull: true, field: "completed_at" })
   completedAt: Date; // Время завершения
 
   @BelongsTo(() => Order)

@@ -1,27 +1,27 @@
-import { Messages as ServerMessages } from '@/common/constants/error-messages';
-import { MESSAGES_REPOSITORY } from '@/common/constants/sequelize';
-import { JwtUser } from '@/common/types/jwt';
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import { EventEmitter } from 'events';
-import { ChatParticipantsService } from '../chatParticipants/chat-participants.service';
-import { SendMessageDto } from './dtos/send-message-dto';
-import { Messages } from './messages.model';
+import { Messages as ServerMessages } from "@/common/constants/error-messages";
+import { MESSAGES_REPOSITORY } from "@/common/constants/sequelize";
+import { JwtUser } from "@/common/types/jwt";
+import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import { EventEmitter } from "events";
+import { ChatParticipantsService } from "../chatParticipants/chat-participants.service";
+import { SendMessageDto } from "./dtos/send-message-dto";
+import { Messages } from "./messages.model";
 
 @Injectable()
 export class MessagesService {
   constructor(
     @Inject(MESSAGES_REPOSITORY) private messageRepository: typeof Messages,
-    private chatParticipantsService: ChatParticipantsService,
+    private chatParticipantsService: ChatParticipantsService
   ) {}
   eventEmitter = new EventEmitter();
   LIMIT = 100;
 
-  async poll(chatId: number, user: JwtUser): Promise<any> {
+  async poll(chatId: number, user: JwtUser): Promise<Messages> {
     const userID = user.id;
 
     const isParticipatedInChat = this.chatParticipantsService.isUserInThisChat(
       userID,
-      chatId,
+      chatId
     );
 
     if (!isParticipatedInChat) {
@@ -57,7 +57,7 @@ export class MessagesService {
     const senderId = user.id;
     const isParticipatedInChat = this.chatParticipantsService.isUserInThisChat(
       senderId,
-      sendMessageDto.chatId,
+      sendMessageDto.chatId
     );
 
     if (!isParticipatedInChat) {
@@ -90,7 +90,7 @@ export class MessagesService {
       where: { chatId: chatId }, // Можно добавить другие фильтры, если нужно
       limit: this.LIMIT, // Максимальное количество сообщений на странице
       offset: offset, // Начало выборки
-      order: [['createdAt', 'DESC']], // Сортировка по дате, от новых к старым
+      order: [["createdAt", "DESC"]], // Сортировка по дате, от новых к старым
     });
 
     return messages;

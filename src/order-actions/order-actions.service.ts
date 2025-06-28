@@ -2,7 +2,7 @@ import { Messages } from '@/common/constants/error-messages';
 import { ORDER_ACTION_REPOSITORY } from '@/common/constants/sequelize';
 import { JwtUser } from '@/common/types/jwt';
 import { Order } from '@/orders/orders.model';
-import { OrderStatusEnum } from '@/orders/ordersStatuses/orders.statuses';
+import { OrderStatusEnum } from '@/orders/ordersStatuses/order-statuses-enum';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OrderAction, OrderActionType } from './order-actions.model';
 

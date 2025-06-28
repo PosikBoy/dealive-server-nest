@@ -1,20 +1,18 @@
-import { User } from '@/users/user.model';
+import { User } from "@/users/user.model";
 import {
   Column,
-  CreatedAt,
   DataType,
   ForeignKey,
   Model,
   Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
+} from "sequelize-typescript";
 
 interface CourierCreationAttrs {
   userId: number;
   name?: string;
 }
 
-@Table({ tableName: 'files' })
+@Table({ tableName: "files" })
 export class Files extends Model<Files, CourierCreationAttrs> {
   @Column({
     type: DataType.INTEGER,
@@ -27,7 +25,7 @@ export class Files extends Model<Files, CourierCreationAttrs> {
   @Column({
     type: DataType.STRING(60),
     allowNull: false,
-    defaultValue: '',
+    defaultValue: "",
   })
   name: string;
 

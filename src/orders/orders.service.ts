@@ -1,32 +1,32 @@
-import { Address } from '@/addresses/addresses.model';
-import { ClientsService } from '@/clients/clients.service';
-import { Messages } from '@/common/constants/error-messages';
+import { Address } from "@/addresses/addresses.model";
+import { ClientsService } from "@/clients/clients.service";
+import { Messages } from "@/common/constants/error-messages";
 import {
   ADDRESS_REPOSITORY,
   ORDERS_REPOSITORY,
-} from '@/common/constants/sequelize';
-import { JwtUser } from '@/common/types/jwt';
-import { Courier } from '@/couriers/couriers.model';
-import { GeodataService } from '@/geodata/geodata.service';
-import { OrderAction } from '@/order-actions/order-actions.model';
-import { OrderActionService } from '@/order-actions/order-actions.service';
-import { TelegramNotifyService } from '@/telegram-notify/telegram-notify.service';
-import { User, UserRolesEnum } from '@/users/user.model';
-import { UserService } from '@/users/user.service';
+} from "@/common/constants/sequelize";
+import { JwtUser } from "@/common/types/jwt";
+import { Courier } from "@/couriers/couriers.model";
+import { GeodataService } from "@/geodata/geodata.service";
+import { OrderAction } from "@/order-actions/order-actions.model";
+import { OrderActionService } from "@/order-actions/order-actions.service";
+import { TelegramNotifyService } from "@/telegram-notify/telegram-notify.service";
+import { User, UserRolesEnum } from "@/users/user.model";
+import { UserService } from "@/users/user.service";
 import {
   BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { Op } from 'sequelize';
-import { CreateOrderDto } from './dtos/create-order.dto';
+} from "@nestjs/common";
+import { Op } from "sequelize";
+import { CreateOrderDto } from "./dtos/create-order.dto";
 import {
   AddressWithGeoData,
   OrderWithoutSensitiveInfoDto,
-} from './dtos/order.dto';
-import { Order } from './orders.model';
-import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
+} from "./dtos/order.dto";
+import { Order } from "./orders.model";
+import { OrderStatusEnum } from "./ordersStatuses/order-statuses-enum";
 
 @Injectable()
 export class OrdersService {
@@ -37,17 +37,17 @@ export class OrdersService {
     private orderActionsService: OrderActionService,
     private userService: UserService,
     private telegramNotifyService: TelegramNotifyService,
-    private geodataService: GeodataService,
+    private geodataService: GeodataService
   ) {}
 
   async getAllOrders(
-    user: JwtUser,
+    user: JwtUser
   ): Promise<Order[] | OrderWithoutSensitiveInfoDto[]> {
     const { id } = user;
     let orders: Order[];
 
     switch (user.role) {
-      case 'client':
+      case "client":
         orders = await this.ordersRepository.findAll({
           where: { clientId: id },
           include: {
@@ -55,16 +55,16 @@ export class OrdersService {
           },
         });
         break;
-      case 'courier':
+      case "courier":
         orders = await this.ordersRepository.findAll({
           where: { courierId: id },
           attributes: {
-            exclude: ['clientId', 'phoneNumber', 'phoneName', 'updatedAt'],
+            exclude: ["clientId", "phoneNumber", "phoneName", "updatedAt"],
           },
           include: {
             model: Address,
             attributes: {
-              exclude: ['phoneNumber', 'floor', 'apartment', 'updatedAt'],
+              exclude: ["phoneNumber", "floor", "apartment", "updatedAt"],
             },
           },
         });
@@ -83,7 +83,7 @@ export class OrdersService {
   //Получение заказа по айди и роли
   async getOrderById(
     id: number,
-    user: JwtUser,
+    user: JwtUser
   ): Promise<Order | OrderWithoutSensitiveInfoDto> {
     //Получение заказа из БД
     const order = await this.ordersRepository.findByPk(id, {
@@ -96,8 +96,8 @@ export class OrdersService {
         },
       ],
       order: [
-        ['actions', 'sequence', 'ASC'],
-        ['addresses', 'id', 'ASC'],
+        ["actions", "sequence", "ASC"],
+        ["addresses", "id", "ASC"],
       ],
     });
 
@@ -108,14 +108,14 @@ export class OrdersService {
 
     switch (user.role) {
       //Для клиента
-      case 'client': {
+      case "client": {
         if (order.clientId !== user.id) {
           throw new NotFoundException(Messages.ORDER_NOT_FOUND);
         }
         return order;
       }
       //Для курьера
-      case 'courier': {
+      case "courier": {
         //Если заказ не принадлежит курьеру
         if (order.courierId !== user.id) {
           //Если статус заказа в поиске курьера - возвращаем заказ с геоданными
@@ -148,19 +148,19 @@ export class OrdersService {
         statusId: OrderStatusEnum.SEARCH_COURIER,
       },
       attributes: {
-        exclude: ['clientId', 'phoneNumber', 'phoneName', 'updatedAt'],
+        exclude: ["clientId", "phoneNumber", "phoneName", "updatedAt"],
       },
       include: [
         {
           model: Address,
           attributes: {
-            exclude: ['phoneNumber', 'floor', 'apartment', 'updatedAt'],
+            exclude: ["phoneNumber", "floor", "apartment", "updatedAt"],
           },
         },
         {
           model: OrderAction,
           attributes: {
-            exclude: ['createdAt', 'updatedAt'],
+            exclude: ["createdAt", "updatedAt"],
           },
         },
       ],
@@ -192,7 +192,7 @@ export class OrdersService {
         {
           model: OrderAction,
           attributes: {
-            exclude: ['createdAt', 'updatedAt'],
+            exclude: ["createdAt", "updatedAt"],
           },
         },
       ],
@@ -210,19 +210,19 @@ export class OrdersService {
 
     if (user) {
       const userDB = await this.userService.findUser(
-        'id',
+        "id",
         user.id,
-        UserRolesEnum.CLIENT,
+        UserRolesEnum.CLIENT
       );
       const client = await this.clientService.findClient(user.id);
 
       clientId = client.userId;
-      if ('phoneNumber' in userDB) phoneNumber = userDB.phoneNumber || '';
+      if ("phoneNumber" in userDB) phoneNumber = userDB.phoneNumber || "";
       phoneName = client.name;
     }
 
     const trackNumber =
-      'MSK' + Math.random().toString(36).substring(2, 13).toUpperCase();
+      "MSK" + Math.random().toString(36).substring(2, 13).toUpperCase();
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     // Создание заказа
@@ -257,7 +257,7 @@ export class OrdersService {
     try {
       this.telegramNotifyService.newOrder(orderFromDb);
     } catch (e) {
-      console.error('Ошибка уведомления Telegram:', e);
+      console.error("Ошибка уведомления Telegram:", e);
     }
     // Возвращаем созданный заказ с адресами
     return { ...order.dataValues, addresses: createdAddresses, actions };
@@ -281,8 +281,12 @@ export class OrdersService {
   }
 
   async cancelClientOrder(orderId: number, client: JwtUser) {
+    // Добавить проверку роли
     const order = await this.ordersRepository.findByPk(orderId);
-    if (order.statusId == OrderStatusEnum.SEARCH_COURIER) {
+    if (
+      order.statusId == OrderStatusEnum.SEARCH_COURIER &&
+      order.clientId == client.id
+    ) {
       order.statusId = OrderStatusEnum.CANCELLED;
       order.save();
     } else {
@@ -305,11 +309,11 @@ export class OrdersService {
         },
         {
           model: Courier,
-          attributes: ['name', 'secondName', 'lastName', 'userId'],
+          attributes: ["name", "secondName", "lastName", "userId"],
           include: [
             {
               model: User,
-              attributes: ['phoneNumber'],
+              attributes: ["phoneNumber"],
             },
           ],
         },
@@ -333,7 +337,7 @@ export class OrdersService {
 
   async enrichOrderWithGeodata(order: Order) {
     const addressesGeodata = await this.geodataService.getAddresses(
-      order.addresses,
+      order.addresses
     );
 
     const addressesWithGeodata = order.addresses.map((address, index) => {

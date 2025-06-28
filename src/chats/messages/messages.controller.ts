@@ -1,5 +1,5 @@
-import { Messages as ServerMessages } from '@/common/constants/error-messages';
-import { JwtGuard } from '@/common/guards/auth.guard';
+import { Messages as ServerMessages } from "@/common/constants/error-messages";
+import { JwtGuard } from "@/common/guards/auth.guard";
 import {
   Body,
   Controller,
@@ -9,32 +9,31 @@ import {
   Query,
   Req,
   UseGuards,
-} from '@nestjs/common';
-import { Request } from 'express';
-import { GetMessagesDto, PollMessagesDto } from './dtos/get-messages-dto';
-import { SendMessageDto } from './dtos/send-message-dto';
-import { MessagesService } from './messages.service';
+} from "@nestjs/common";
+import { Request } from "express";
+import { GetMessagesDto, PollMessagesDto } from "./dtos/get-messages-dto";
+import { SendMessageDto } from "./dtos/send-message-dto";
+import { MessagesService } from "./messages.service";
 
 @UseGuards(JwtGuard)
-@Controller('messages')
+@Controller("messages")
 export class MessagesController {
   constructor(private messagesService: MessagesService) {}
 
-  @Get('poll')
+  @Get("poll")
   async poll(@Query() pollMessagesDto: PollMessagesDto, @Req() req: Request) {
     const user = req.user;
-    console.log(user);
 
     const message = await this.messagesService.poll(
       pollMessagesDto.chatId,
-      user,
+      user
     );
     if (!message) throw new NotFoundException(ServerMessages.NO_NEW_MESSAGES);
 
     return message;
   }
 
-  @Get('')
+  @Get("")
   async get(@Query() getMessagesDto: GetMessagesDto, @Req() req: Request) {
     const user = req.user;
     const { chatId, page } = getMessagesDto;
@@ -42,7 +41,7 @@ export class MessagesController {
     return messages;
   }
 
-  @Post('')
+  @Post("")
   async send(@Body() SendMessageDto: SendMessageDto, @Req() req: Request) {
     const user = req.user;
     return await this.messagesService.send(user, SendMessageDto);

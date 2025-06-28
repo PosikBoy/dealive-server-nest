@@ -1,17 +1,17 @@
-import { Client } from '@/clients/clients.model';
-import { Courier } from '@/couriers/couriers.model';
-import { Order } from '@/orders/orders.model';
-import { UserWithoutSensitiveInfoDto } from '@/users/dtos/user-without-sensitive-info.dto';
-import { User } from '@/users/user.model';
-import { Injectable } from '@nestjs/common';
-import * as TelegramBot from 'node-telegram-bot-api';
+import { CourierWithoutSensitiveInfo } from "@/auth/dtos/courier-without-sensitive-info";
+import { ClientDto } from "@/clients/dtos/clients.dto";
+import { Order } from "@/orders/orders.model";
+import { UserWithoutSensitiveInfoDto } from "@/users/dtos/user-without-sensitive-info.dto";
+import { User } from "@/users/user.model";
+import { Injectable } from "@nestjs/common";
+import * as TelegramBot from "node-telegram-bot-api";
 
 @Injectable()
 export class TelegramNotifyService {
   private TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_API_KEY;
   private TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-  bot = new TelegramBot(this.TELEGRAM_BOT_TOKEN || '', {
+  bot = new TelegramBot(this.TELEGRAM_BOT_TOKEN || "", {
     polling: false,
   });
 
@@ -20,8 +20,8 @@ export class TelegramNotifyService {
       this.bot.sendMessage(
         this.TELEGRAM_CHAT_ID,
         `🚚 Новый заказ №${order.id} 🚚
-${order.phoneNumber ? '📞 Телефон: ' + order.phoneNumber : ''}
-${order.phoneName ? '📝 Имя: ' + order.phoneName : ''}
+${order.phoneNumber ? "📞 Телефон: " + order.phoneNumber : ""}
+${order.phoneName ? "📝 Имя: " + order.phoneName : ""}
 📦 Тип отправления: ${order.parcelType}
 ⚖️ Вес: ${order.weight}
 💰 Цена: ${order.price} руб.
@@ -30,26 +30,27 @@ ${order.addresses
   .map(
     (address) =>
       ` \n🏠 ${address.address}${
-        address.floor ? `\n    🏢 Этаж: ${address.floor}` : ''
-      }${
-        address.apartment ? `\n    🚪 Квартира: ${address.apartment}` : ''
-      }${address.phoneNumber ? `\n    📞 Телефон: ${address.phoneNumber}` : ''}${
-        address.phoneName ? `\n    📝 Имя: ${address.phoneName}` : ''
-      }${
+        address.floor ? `\n    🏢 Этаж: ${address.floor}` : ""
+      }${address.apartment ? `\n    🚪 Квартира: ${address.apartment}` : ""}${
+        address.phoneNumber ? `\n    📞 Телефон: ${address.phoneNumber}` : ""
+      }${address.phoneName ? `\n    📝 Имя: ${address.phoneName}` : ""}${
         address.info
           ? `\n    ℹ️ Дополнительная информация: ${address.info}`
-          : ''
-      }`,
+          : ""
+      }`
   )
-  .join('')}`,
-        { parse_mode: 'HTML' },
+  .join("")}`,
+        { parse_mode: "HTML" }
       );
     } catch (error) {
       return this.sendError(JSON.stringify(error));
     }
   }
 
-  newCourier(user: User | UserWithoutSensitiveInfoDto, courier: Courier | any) {
+  newCourier(
+    user: User | UserWithoutSensitiveInfoDto,
+    courier: CourierWithoutSensitiveInfo
+  ) {
     try {
       this.bot.sendMessage(
         this.TELEGRAM_CHAT_ID,
@@ -61,14 +62,14 @@ ${order.addresses
 📝 Имя: ${user.email}
 📆 Дата рождения: ${courier.birthDate}
 `,
-        { parse_mode: 'HTML' },
+        { parse_mode: "HTML" }
       );
     } catch (error) {
       return this.sendError(JSON.stringify(error));
     }
   }
 
-  newClient(client: any) {
+  newClient(client: ClientDto) {
     try {
       this.bot.sendMessage(
         this.TELEGRAM_CHAT_ID,
@@ -77,7 +78,7 @@ ${order.addresses
 📞 Телефон: ${client.phoneNumber}
 📝 Почта: ${client.email}
 `,
-        { parse_mode: 'HTML' },
+        { parse_mode: "HTML" }
       );
     } catch (error) {
       return this.sendError(JSON.stringify(error));
@@ -87,7 +88,7 @@ ${order.addresses
   sendError(error: string) {
     try {
       this.bot.sendMessage(this.TELEGRAM_CHAT_ID, error, {
-        parse_mode: 'HTML',
+        parse_mode: "HTML",
       });
     } catch (error) {
       console.log(error);

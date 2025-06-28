@@ -1,27 +1,31 @@
-import { USER_REPOSITORY } from '@/common/constants/sequelize';
-import { Inject, Injectable } from '@nestjs/common';
-import { UserCreateDto } from './dtos/create-user.dto';
-import { EditUserDto } from './dtos/edit-user.dto';
-import { UserWithoutSensitiveInfoDto } from './dtos/user-without-sensitive-info.dto';
-import { User, UserRolesEnum } from './user.model';
+import { USER_REPOSITORY } from "@/common/constants/sequelize";
+import { Inject, Injectable } from "@nestjs/common";
+import { UserCreateDto } from "./dtos/create-user.dto";
+import { EditUserDto } from "./dtos/edit-user.dto";
+import { UserWithoutSensitiveInfoDto } from "./dtos/user-without-sensitive-info.dto";
+import { User, UserRolesEnum } from "./user.model";
+
+interface WhereConditions<T> {
+  [key: string]: T | { [operator: string]: T };
+}
 
 @Injectable()
 export class UserService {
   constructor(@Inject(USER_REPOSITORY) private userRepository: typeof User) {}
 
   async findUser(
-    field: 'id' | 'email' | 'phoneNumber',
+    field: "id" | "email" | "phoneNumber",
     data: string | number,
     role: UserRolesEnum = UserRolesEnum.CLIENT,
-    includeSensitiveInfo: boolean = false,
+    includeSensitiveInfo: boolean = false
   ) {
-    let whereCondition: any;
+    let whereCondition: WhereConditions<number | string | boolean>;
 
-    if (field === 'id') {
+    if (field === "id") {
       whereCondition = { id: data, role };
-    } else if (field === 'email') {
+    } else if (field === "email") {
       whereCondition = { email: data, role };
-    } else if (field === 'phoneNumber') {
+    } else if (field === "phoneNumber") {
       whereCondition = { phoneNumber: data, role };
     }
 

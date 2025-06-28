@@ -1,6 +1,7 @@
 import { Address } from '@/addresses/addresses.model';
-import { Courier } from '@/couriers/couriers.model';
 import { Client } from '@/clients/clients.model';
+import { Courier } from '@/couriers/couriers.model';
+import { OrderAction } from '@/order-actions/order-actions.model';
 import {
   BelongsTo,
   Column,
@@ -12,10 +13,8 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { OrderStatus } from './order-statuses.model';
-import { OrderAction } from '@/order-actions/order-actions.model';
-import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
-import { User } from '@/users/user.model';
+import { OrderStatusEnum } from './ordersStatuses/order-statuses-enum';
+import { OrderStatus } from './ordersStatuses/order-statuses.model';
 
 export interface OrderCreationAttrs {
   clientId?: number;

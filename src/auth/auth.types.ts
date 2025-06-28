@@ -1,4 +1,4 @@
-interface IClient {
+export interface IClient {
   id: number;
   phoneNumber: string;
   name: string;
@@ -8,12 +8,12 @@ interface IClient {
   isNumberConfirmed: boolean;
 }
 
-interface ITokens {
+export interface ITokens {
   refreshToken: string;
   accessToken: string;
 }
 
-interface IAuthClientResponse {
+export interface IAuthClientResponse {
   client: IClient;
   tokens: ITokens;
 }

@@ -1,14 +1,15 @@
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_EXPIRES_IN,
-} from '@/common/constants/auth';
-import { Messages } from '@/common/constants/error-messages';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+} from "@/common/constants/auth";
+
+import { Messages } from "@/common/constants/error-messages";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
 
 interface JwtPayload {
   id: number;
-  role: 'courier' | 'client';
+  role: "courier" | "client";
 }
 
 @Injectable()
@@ -30,7 +31,8 @@ export class TokensService {
     try {
       const payload = this.jwtService.verify<JwtPayload>(token);
       return payload;
-    } catch (error) {
+    } catch (error: unknown) {
+      console.log(error);
       throw new UnauthorizedException(Messages.INVALID_TOKEN);
     }
   }

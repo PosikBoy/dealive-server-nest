@@ -1,4 +1,4 @@
-export default class TrackOrderDto {
+export class TrackOrderDto {
   code: string;
   trackNumber: string;
 }

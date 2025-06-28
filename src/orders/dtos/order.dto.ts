@@ -1,6 +1,6 @@
-import { Address } from '@/addresses/addresses.model';
-import { Geodata } from '@/geodata/types/geodata-response';
-import { OrderAction } from '@/order-actions/order-actions.model';
+import { Address } from "@/addresses/addresses.model";
+import { Geodata } from "@/geodata/types/geodata-response";
+import { OrderAction } from "@/order-actions/order-actions.model";
 
 export class OrderWithGeoDto {
   id: number;
@@ -71,12 +71,12 @@ class AddressWithoutSensitiveInfo {
   orderId: number;
   address: string;
   info: string;
-  geoData: any;
+  geoData: Geodata;
   constructor(address: AddressWithGeoData) {
     this.id = address.id;
     this.orderId = address.orderId;
     this.address = address.address;
-    this.info = address.info.replace(/\d/g, '*');
+    this.info = address.info.replace(/\d/g, "*");
     this.geoData = address.geoData;
   }
 }

@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
+import { OrderStatusEnum } from './order-statuses-enum';
 import { OrderStatus } from './order-statuses.model';
-import { OrderStatusEnum } from './ordersStatuses/orders.statuses';
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
