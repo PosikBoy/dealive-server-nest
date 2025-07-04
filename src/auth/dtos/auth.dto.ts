@@ -45,7 +45,7 @@ export class ClientRegisterDto {
 
   @IsNotEmpty()
   @IsString({ message: VALIDATION_ERRORS_MESSAGES.INVALID_STRING })
-  @Length(1, 40, { message: VALIDATION_ERRORS_MESSAGES.lengthRange(1, 40) })
+  @Length(6, 40, { message: VALIDATION_ERRORS_MESSAGES.lengthRange(6, 40) })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,40}$/, {
     message:
       "Пароль должен содержать хотя бы одну заглавную букву, одну строчную букву и одну цифру, длиной от 6 до 40 символов",
@@ -92,7 +92,7 @@ export class CourierRegisterDto {
 
   @IsNotEmpty()
   @IsString({ message: VALIDATION_ERRORS_MESSAGES.INVALID_STRING })
-  @Length(1, 40, { message: VALIDATION_ERRORS_MESSAGES.lengthRange(1, 40) })
+  @Length(6, 40, { message: VALIDATION_ERRORS_MESSAGES.lengthRange(6, 40) })
   @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,40}$/, {
     message:
       "Пароль должен содержать хотя бы одну заглавную букву, одну строчную букву и одну цифру, длиной от 6 до 40 символов",
