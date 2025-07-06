@@ -13,7 +13,7 @@ import {
   ValidateNested,
 } from "class-validator";
 
-class Address {
+export class Address {
   @IsString({ message: VALIDATION_ERRORS_MESSAGES.INVALID_STRING })
   @Length(1, 128, { message: VALIDATION_ERRORS_MESSAGES.lengthRange(1, 128) })
   @ApiProperty({ example: "ул. Пушкина", description: "Адрес доставки" })

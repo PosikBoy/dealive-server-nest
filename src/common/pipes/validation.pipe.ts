@@ -3,7 +3,7 @@ import {
   Injectable,
   ValidationPipe as NestValidationPipe,
   ValidationError,
-} from '@nestjs/common';
+} from "@nestjs/common";
 
 @Injectable()
 export class AppValidationPipe extends NestValidationPipe {
@@ -16,7 +16,7 @@ export class AppValidationPipe extends NestValidationPipe {
         return new BadRequestException({
           statusCode: 400,
           message: formattedErrors,
-          error: 'Bad Request',
+          error: "Bad Request",
         });
       },
     });
@@ -25,8 +25,8 @@ export class AppValidationPipe extends NestValidationPipe {
 
 function flattenValidationErrors(
   errors: ValidationError[],
-  parentPath = '',
-  result: Record<string, string> = {},
+  parentPath = "",
+  result: Record<string, string> = {}
 ) {
   for (const err of errors) {
     const propertyPath = parentPath
