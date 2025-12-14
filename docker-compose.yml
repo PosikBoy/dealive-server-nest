@@ -1,35 +1,43 @@
-version: '3.8'
-
 services:
   backend:
     container_name: backend
     build: ./
     env_file:
-      - .production.env
-    ports:
-      - "127.0.0.1:5000:5000"
+      - .env.production
+
+    expose:
+      - "5000"
+
     restart: always
+
     volumes:
       - ../documents:/documents
+
     networks:
-      - backend
+      - app-network
+      - backend-internal
+
     depends_on:
       mysql:
         condition: service_healthy
+
       redis:
         condition: service_healthy
-      geodata:
-        condition: service_started
+
   redis:
     image: redis:alpine
-    container_name: redis
+    container_name: backend_redis
     expose:
       - "6379"
+
     volumes:
       - redis_data:/data
+
     networks:
-      - backend
+      - backend-internal
+
     restart: unless-stopped
+
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -39,44 +47,39 @@ services:
   mysql:
     container_name: mysql
     image: mysql:8.0
-    ports:      
-      - "127.0.0.1:3306:3306"
+    expose:
+      - "3306"
+
     env_file:
-      - ./.production.env
+      - ./.env.production
+
     environment:
-      - MYSQL_DATABASE:geodata
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+
     volumes:
-      - ../init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./dump.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/mysql
+
     restart: unless-stopped
+
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -u root -p$$MYSQL_ROOT_PASSWORD || exit 1",
+        ]
       interval: 5s
       timeout: 10s
       retries: 10
     networks:
-      - backend
-
-  geodata:
-    container_name: geodata
-    build: ../dealive-geodata/
-    expose:
-      - "5001"
-    env_file:
-      - ../dealive-geodata/.env
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - backend
+      - backend-internal
 
 volumes:
   db_data:
-  app_data:
   redis_data:
 
 networks:
-  backend:
-   driver: bridge 
+  app-network:
+    external: true
+  backend-internal:
+    driver: bridge
