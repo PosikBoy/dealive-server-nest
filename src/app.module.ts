@@ -12,6 +12,7 @@ import { GeodataModule } from "./geodata/geodata.module";
 import { OrderActionsModule } from "./order-actions/order-actions.module";
 import { OrdersModule } from "./orders/orders.module";
 import { PriceModule } from "./price/price.module";
+import { RedisModule } from "./redis/redis.module";
 import { SuggestionModule } from "./suggestions/suggestions.module";
 import { TelegramNotifyModule } from "./telegram-notify/telegram-notify.module";
 import { TokensModule } from "./tokens/tokens.module";
@@ -38,6 +39,7 @@ import { TokensModule } from "./tokens/tokens.module";
     TelegramNotifyModule,
     GeodataModule,
     PriceModule,
+    RedisModule,
   ],
 })
 export class AppModule {}
