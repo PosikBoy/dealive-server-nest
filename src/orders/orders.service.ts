@@ -10,6 +10,7 @@ import { Courier } from "@/couriers/couriers.model";
 import { GeodataService } from "@/geodata/geodata.service";
 import { OrderAction } from "@/order-actions/order-actions.model";
 import { OrderActionService } from "@/order-actions/order-actions.service";
+import { PriceService } from "@/price/price.service";
 import { TelegramNotifyService } from "@/telegram-notify/telegram-notify.service";
 import { User, UserRolesEnum } from "@/users/user.model";
 import { UserService } from "@/users/user.service";
@@ -37,7 +38,8 @@ export class OrdersService {
     private orderActionsService: OrderActionService,
     private userService: UserService,
     private telegramNotifyService: TelegramNotifyService,
-    private geodataService: GeodataService
+    private geodataService: GeodataService,
+    private priceService: PriceService
   ) {}
 
   async getAllOrders(
@@ -254,6 +256,10 @@ export class OrdersService {
     });
 
     const actions = await this.orderActionsService.generate(orderFromDb);
+
+    // Track order for demand-based pricing
+    await this.priceService.trackOrder();
+
     try {
       this.telegramNotifyService.newOrder(orderFromDb);
     } catch (e) {

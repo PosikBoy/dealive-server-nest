@@ -1,11 +1,15 @@
 import { GeodataService } from "@/geodata/geodata.service";
+import { RedisService } from "@/redis/redis.service";
 import { Inject, Injectable } from "@nestjs/common";
 import { GetPriceDto } from "./dtos/get-price-dto";
 import { PriceOption, PriceOptionsResult } from "./price.types";
 
 @Injectable()
 export class PriceService {
-  constructor(@Inject() private readonly geodataService: GeodataService) {}
+  constructor(
+    @Inject() private readonly geodataService: GeodataService,
+    @Inject() private readonly redisService: RedisService
+  ) {}
 
   MIN_PRICE = 250;
   PRICE_PER_KM = 23;
@@ -16,6 +20,50 @@ export class PriceService {
     "До 10 кг": 1.5,
     "До 15 кг": 2,
   };
+
+  // Redis keys for demand tracking
+  private readonly DEMAND_KEY = "orders:demand";
+  private readonly DEMAND_TTL = 3660; // 1 hour + buffer in seconds
+  private readonly ONE_HOUR_MS = 3600000; // 1 hour in milliseconds
+
+  /**
+   * Track new order for demand-based pricing
+   */
+  async trackOrder(): Promise<void> {
+    try {
+      const now = Date.now();
+      const member = `order:${now}`;
+
+      // Add current timestamp to sorted set
+      await this.redisService.zAdd(this.DEMAND_KEY, now, member);
+
+      // Set expiration for the key
+      await this.redisService.expire(this.DEMAND_KEY, this.DEMAND_TTL);
+    } catch (e) {
+      console.error("Ошибка отслеживания спроса в Redis:", e);
+    }
+  }
+
+  /**
+   * Get demand multiplier based on orders in last hour
+   */
+  private async getDemandMultiplier(): Promise<number> {
+    try {
+      const now = Date.now();
+      const oneHourAgo = now - this.ONE_HOUR_MS;
+
+      // Remove old entries (older than 1 hour)
+      await this.redisService.zRemRangeByScore(this.DEMAND_KEY, 0, oneHourAgo);
+
+      // Count remaining entries
+      const ordersLastHour = await this.redisService.zCard(this.DEMAND_KEY);
+
+      return 1 + ordersLastHour / 100;
+    } catch (e) {
+      console.error("Ошибка получения спроса из Redis:", e);
+      return 1; // Default multiplier if Redis fails
+    }
+  }
 
   async getPrice(getPriceDto: GetPriceDto): Promise<PriceOptionsResult> {
     const weightCoeff = this.WEIGHT_COEFFS[getPriceDto.weight] || 1.5;
@@ -46,12 +94,18 @@ export class PriceService {
       (address) => address.beltwayHit !== "IN_MKAD"
     );
 
-    const price =
+    // Get demand multiplier based on orders in last hour
+    const demandMultiplier = await this.getDemandMultiplier();
+
+    const basePrice =
       (this.MIN_PRICE +
         this.PRICE_PER_KM * distance +
         this.PRICE_FROM_METRO * distanceToMetro) *
       (isOutMKAD ? 1.2 : 1) *
       weightCoeff;
+
+    // Apply demand multiplier to final price
+    const price = basePrice * demandMultiplier;
 
     const suggestedPrices = this.generatePriceOptions(price);
     return suggestedPrices;
