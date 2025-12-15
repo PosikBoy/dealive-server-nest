@@ -1,11 +1,12 @@
-import { GeodataModule } from '@/geodata/geodata.module';
-import { Module } from '@nestjs/common';
-import { PriceController } from './price.controller';
-import { PriceService } from './price.service';
+import { GeodataModule } from "@/geodata/geodata.module";
+import { RedisModule } from "@/redis/redis.module";
+import { Module } from "@nestjs/common";
+import { PriceController } from "./price.controller";
+import { PriceService } from "./price.service";
 
 @Module({
   controllers: [PriceController],
-  imports: [GeodataModule],
+  imports: [GeodataModule, RedisModule],
   providers: [PriceService],
 })
 export class PriceModule {}
